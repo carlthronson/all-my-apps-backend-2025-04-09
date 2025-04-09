@@ -1,0 +1,33 @@
+type Query {
+  getMyAccount: Account
+}
+
+type Mutation {
+  generateResetPasswordToken(email: String!): String!
+
+  resetPassword(email: String!, password: String!, token: String!): Boolean!
+
+  login(email: String!, password: String!): Account!
+}
+
+scalar Long
+scalar Url
+scalar DateTime
+
+directive @Pattern(regexp: String!) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+type ClientCheckoutData {
+  id: ID!,
+  status: PaymentStatus!,
+  checkoutToken: String!
+}
+
+enum PaymentStatus {
+  APPROVED
+  PENDING
+}
+
+type Account {
+  id: ID!,
+  roles: [String!]!
+}
