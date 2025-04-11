@@ -21,7 +21,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import personal.carl.thronson.data.repo.AccountRepository;
+import personal.carl.thronson.security.data.repo.AccountRepository;
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
