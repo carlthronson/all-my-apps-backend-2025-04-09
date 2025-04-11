@@ -63,6 +63,15 @@ public class DataInitializer implements CommandLineRunner {
       jobSearchPhaseRepository.save(searchPhase);
     });
 
+    // Create Job Search Phases
+    jobSearchPhaseRepository.findByName(JobSearchPhaseEntity.JOB_SEARCH_PHASE_APPLY).ifPresentOrElse(jobSearchPhaseEntity -> {
+    }, () -> {
+      JobSearchPhaseEntity searchPhase = new JobSearchPhaseEntity();
+      searchPhase.setName(JobSearchPhaseEntity.JOB_SEARCH_PHASE_APPLY);
+      searchPhase.setLabel("Apply");
+      jobSearchPhaseRepository.save(searchPhase);
+    });
+    
     // Create Job Search Statuses
     jobSearchStatusRepository.findByName(JobSearchStatusEntity.JOB_SEARCH_STATUS_FOUND).ifPresentOrElse(status -> {
     }, () -> {
@@ -76,6 +85,21 @@ public class DataInitializer implements CommandLineRunner {
       }).orElseThrow(() -> new RuntimeException("Database Initialization Error"));
       System.out.println("Save status: " + foundStatus);
       jobSearchStatusRepository.save(foundStatus);
+    });
+
+    // Create Job Search Statuses
+    jobSearchStatusRepository.findByName(JobSearchStatusEntity.JOB_SEARCH_STATUS_APPLY).ifPresentOrElse(status -> {
+    }, () -> {
+      JobSearchStatusEntity applyStatus = new JobSearchStatusEntity();
+      applyStatus.setName(JobSearchStatusEntity.JOB_SEARCH_STATUS_APPLY);
+      applyStatus.setLabel("Apply");
+      jobSearchPhaseRepository.findByName(JobSearchPhaseEntity.JOB_SEARCH_PHASE_APPLY).map(phaseEntity -> {
+        System.out.println("Found start phase: " + phaseEntity);
+        applyStatus.setPhase(phaseEntity);
+        return phaseEntity;
+      }).orElseThrow(() -> new RuntimeException("Database Initialization Error"));
+      System.out.println("Save status: " + applyStatus);
+      jobSearchStatusRepository.save(applyStatus);
     });
   }
 }

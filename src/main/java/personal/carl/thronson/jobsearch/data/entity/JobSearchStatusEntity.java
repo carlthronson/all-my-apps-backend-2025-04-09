@@ -21,6 +21,7 @@ import personal.carl.thronson.workflow.data.core.Status;
 public class JobSearchStatusEntity extends Status {
 
   public static final String JOB_SEARCH_STATUS_FOUND = "JOB_SEARCH_STATUS_FOUND";
+  public static final String JOB_SEARCH_STATUS_APPLY = "JOB_SEARCH_STATUS_APPLY";
 
   /**
    * Every Status needs a Phase

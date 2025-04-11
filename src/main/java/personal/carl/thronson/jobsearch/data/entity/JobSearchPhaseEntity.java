@@ -18,6 +18,7 @@ import personal.carl.thronson.workflow.data.core.Phase;
 public class JobSearchPhaseEntity extends Phase {
 
   public static final String JOB_SEARCH_PHASE_SEARCH = "JOB_SEARCH_PHASE_SEARCH";
+  public static final String JOB_SEARCH_PHASE_APPLY = "JOB_SEARCH_PHASE_APPLY";
 
   /**
    * A Phase can haver zero or more Statuses
