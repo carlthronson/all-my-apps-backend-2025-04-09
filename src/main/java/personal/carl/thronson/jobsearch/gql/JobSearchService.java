@@ -59,27 +59,27 @@ public class JobSearchService {
   @Autowired
   private JobSearchTaskRepository jobSearchTaskRepository;
 
-  @Scheduled(fixedRate = 3000 * 60) // Executes every 3 minutes
+  @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
   public void importEngineerJobs() throws Exception {
     importJobs("engineer", 168, 35);
   }
 
-  @Scheduled(fixedRate = 3000 * 60) // Executes every 3 minutes
+  @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
   public void importSoftwareJobs() throws Exception {
     importJobs("software", 168, 35);
   }
 
-  @Scheduled(fixedRate = 3000 * 60) // Executes every 3 minutes
+  @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
   public void importDeveloperJobs() throws Exception {
     importJobs("developer", 168, 35);
   }
 
-  @Scheduled(fixedRate = 3000 * 60) // Executes every 3 minutes
+  @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
   public void importFullstackJobs() throws Exception {
     importJobs("fullstack", 168, 35);
   }
 
-  @Scheduled(fixedRate = 3000 * 60) // Executes every 3 minutes
+  @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
   public void importBackendJobs() throws Exception {
     importJobs("backend", 168, 35);
   }
