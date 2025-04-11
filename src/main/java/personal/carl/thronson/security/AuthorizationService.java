@@ -15,11 +15,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.servlet.http.HttpServletResponse;
-import personal.carl.thronson.data.core.AccountAuthorizationPrincipal;
-import personal.carl.thronson.data.entity.AccountEntity;
-import personal.carl.thronson.data.entity.ResetPasswordTokenEntity;
-import personal.carl.thronson.data.repo.AccountRepository;
-import personal.carl.thronson.data.repo.ResetPasswordTokenRepository;
+import personal.carl.thronson.security.data.core.AccountAuthorizationPrincipal;
+import personal.carl.thronson.security.data.entity.AccountEntity;
+import personal.carl.thronson.security.data.entity.ResetPasswordTokenEntity;
+import personal.carl.thronson.security.data.repo.AccountRepository;
+import personal.carl.thronson.security.data.repo.ResetPasswordTokenRepository;
 
 @Service
 @Transactional
