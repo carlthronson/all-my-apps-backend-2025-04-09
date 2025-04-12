@@ -1,9 +1,10 @@
 package personal.carl.thronson.jobsearch.rest;
 
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -76,79 +77,73 @@ public class CompanyController {
         return service.count();
     }
 
-    @RequestMapping(path = "/story/phase/{phaseName}", method = RequestMethod.GET)
-    public List<JobSearchCompanyEntity> findByPhase(
-            @PathVariable("phaseName") String phaseName,
-            @RequestParam("pageNumber") Optional<Integer> pageNumber,
-            @RequestParam("pageSize") Optional<Integer> pageSize,
-            Principal principal) {
+//    @RequestMapping(path = "/story/phase/{phaseName}", method = RequestMethod.GET)
+//    public List<JobSearchCompanyEntity> findByPhase(
+//            @PathVariable("phaseName") String phaseName,
+//            @RequestParam("pageNumber") Optional<Integer> pageNumber,
+//            @RequestParam("pageSize") Optional<Integer> pageSize,
+//            Principal principal) {
+//
+//        logger.info("Path variable phaseName: " + phaseName);
+//        logger.info("Request param pageNumber: " + pageNumber);
+//        logger.info("Request param pageSize: " + pageSize);
+//
+//        Pageable pageable = PageRequest.of(
+//                pageNumber.isPresent() ? pageNumber.get() : 0,
+//                pageSize.isPresent() ? pageSize.get() : 1000);
+//
+//        return findPageByPhase(phaseName, pageable);
+//    }
 
-        logger.info("Path variable phaseName: " + phaseName);
-        logger.info("Request param pageNumber: " + pageNumber);
-        logger.info("Request param pageSize: " + pageSize);
-
-        Pageable pageable = PageRequest.of(
-                pageNumber.isPresent() ? pageNumber.get() : 0,
-                pageSize.isPresent() ? pageSize.get() : 1000);
-
-        return findPageByPhase(phaseName, pageable);
-    }
-
-    public List<JobSearchCompanyEntity> findPageByPhase(String phaseName,
-        Pageable pageable) {
-    logger.info("findPageByPhase");
-    JobSearchPhaseEntity phase = phaseRepository.findByName(phaseName).get();
-//    logger.info("Phase entity: " + phase.getName());
-    Page<JobSearchTaskEntity> taskPage = taskRepository
-            .findAllByStatusIn(phase.getStatuses(), pageable);
-//    logger.info("Tasks page: " + taskPage);
-    Page<JobSearchCompanyEntity> storiesPage = service
-            .findAllByTasksIn(taskPage.getContent(), pageable);
-//    logger.info("Stories page: " + storiesPage);
-    List<JobSearchCompanyEntity> list = new ArrayList<>();
-    for (JobSearchCompanyEntity entity : storiesPage.getContent()) {
-//        logger.info("Story entity: " + entity.getName());
-        JobSearchCompanyEntity storyEntity = new JobSearchCompanyEntity();
-        storyEntity.setId(entity.getId());
-        storyEntity.setName(entity.getName());
-        storyEntity.setLabel(entity.getLabel());
-        storyEntity.setLocation(entity.getLocation());
-        List<JobSearchTaskEntity> originalList = entity.getTasks();
-        System.out.println("Original tasks: " + originalList.size());
-        List<JobSearchTaskEntity> newList = originalList.stream()
-                .filter(task -> filterTask(task, phaseName)).toList();
-        System.out.println("New tasks: " + newList.size());
-        storyEntity.setTasks(newList);
-        storyEntity.setPhase(entity.getPhase());
-        list.add(storyEntity);
-    }
-    list = list.stream().sorted(new Comparator<JobSearchCompanyEntity>() {
-
-        // Reverse order, most recent first
-        @Override
-        public int compare(JobSearchCompanyEntity o1, JobSearchCompanyEntity o2) {
-            JobSearchJobListingEntity job1 = sortTasks(o1);
-            JobSearchJobListingEntity job2 = sortTasks(o2);
-            return job2.getPublishedAt().compareTo(job1.getPublishedAt());
-        }
-
-        // Also in reverse order, most recent first
-        private JobSearchJobListingEntity sortTasks(JobSearchCompanyEntity o1) {
-            List<JobSearchTaskEntity> l1 = o1.getTasks().stream()
-                    .sorted(new Comparator<JobSearchTaskEntity>() {
-
-                        @Override
-                        public int compare(JobSearchTaskEntity o1, JobSearchTaskEntity o2) {
-                            return o1.getJob().getPublishedAt().compareTo(
-                                    o2.getJob().getPublishedAt());
-                        }
-                    }).toList();
-            o1.setTasks(l1);
-            return o1.getTasks().get(0).getJob();
-        }
-    }).toList();
-    return list;
-}
+//    public List<JobSearchCompanyEntity> findPageByPhase(String phaseName, Pageable pageable) {
+//      logger.info("findPageByPhase");
+//      JobSearchPhaseEntity phase = phaseRepository.findByName(phaseName).get();
+////    logger.info("Phase entity: " + phase.getName());
+//      Page<JobSearchTaskEntity> taskPage = taskRepository.findAllByStatusIn(phase.getStatuses(), pageable);
+////    logger.info("Tasks page: " + taskPage);
+//      Page<JobSearchCompanyEntity> storiesPage = service.findAllByTasksIn(taskPage.getContent(), pageable);
+////    logger.info("Stories page: " + storiesPage);
+//      List<JobSearchCompanyEntity> list = new ArrayList<>();
+//      for (JobSearchCompanyEntity entity : storiesPage.getContent()) {
+////        logger.info("Story entity: " + entity.getName());
+//        JobSearchCompanyEntity storyEntity = new JobSearchCompanyEntity();
+//        storyEntity.setId(entity.getId());
+//        storyEntity.setName(entity.getName());
+//        storyEntity.setLabel(entity.getLabel());
+//        storyEntity.setLocation(entity.getLocation());
+//        List<JobSearchTaskEntity> originalList = entity.getTasks();
+//        System.out.println("Original tasks: " + originalList.size());
+//        List<JobSearchTaskEntity> newList = originalList.stream().filter(task -> filterTask(task, phaseName)).toList();
+//        System.out.println("New tasks: " + newList.size());
+//        storyEntity.setTasks(newList);
+////        storyEntity.setPhase(entity.getPhase());
+//        list.add(storyEntity);
+//      }
+//      list = list.stream().sorted(new Comparator<JobSearchCompanyEntity>() {
+//
+//        // Reverse order, most recent first
+//        @Override
+//        public int compare(JobSearchCompanyEntity o1, JobSearchCompanyEntity o2) {
+//          JobSearchJobListingEntity job1 = sortTasks(o1);
+//          JobSearchJobListingEntity job2 = sortTasks(o2);
+//          return job2.getPublishedAt().compareTo(job1.getPublishedAt());
+//        }
+//
+//        // Also in reverse order, most recent first
+//        private JobSearchJobListingEntity sortTasks(JobSearchCompanyEntity o1) {
+//          List<JobSearchTaskEntity> l1 = o1.getTasks().stream().sorted(new Comparator<JobSearchTaskEntity>() {
+//
+//            @Override
+//            public int compare(JobSearchTaskEntity o1, JobSearchTaskEntity o2) {
+//              return o1.getJob().getPublishedAt().compareTo(o2.getJob().getPublishedAt());
+//            }
+//          }).toList();
+//          o1.setTasks(l1);
+//          return o1.getTasks().get(0).getJob();
+//        }
+//      }).toList();
+//      return list;
+//    }
 
     private Boolean filterTask(JobSearchTaskEntity task, String phaseName) {
       System.out.println("Filter task - task name: " + task.getName());
@@ -162,4 +157,62 @@ public class CompanyController {
       System.out.println("Filter task - result: " + result);
       return result;
   }
+
+    @RequestMapping(path = "/story/phase/{phaseName}", method = RequestMethod.GET)
+    public List<JobGroup> findByPhase(
+            @PathVariable("phaseName") String phaseName,
+            @RequestParam("pageNumber") Optional<Integer> pageNumber,
+            @RequestParam("pageSize") Optional<Integer> pageSize,
+            Principal principal) {
+
+        logger.info("Path variable phaseName: " + phaseName);
+        logger.info("Request param pageNumber: " + pageNumber);
+        logger.info("Request param pageSize: " + pageSize);
+    Optional<JobSearchPhaseEntity> phase = phaseRepository.findByName(phaseName);
+    Map<Long, JobGroup> companies = new HashMap<>();
+    
+    for (JobSearchStatusEntity status: phase.get().getStatuses()) {
+      for (JobSearchTaskEntity task: status.getTasks()) {
+        JobSearchJobListingEntity job = task.getJob();
+        Long key = job.getCompany().getId();
+        if (companies.containsKey(key)) {
+          JobGroup company = companies.get(key);
+          company.addJob(job);
+        } else {
+          JobGroup company = new JobGroup();
+          company.setName(job.getCompany().getName());
+          company.setLabel(job.getCompany().getName());
+          company.setLocation(job.getLocation());
+          company.addJob(job);
+          companies.put(key, company);
+        }
+      }
+    }
+    List<JobGroup> list; 
+    list = companies.values().stream().sorted(new Comparator<JobGroup>() {
+
+      // Reverse order, most recent first
+      @Override
+      public int compare(JobGroup o1, JobGroup o2) {
+        JobSearchJobListingEntity job1 = sortJobs(o1);
+        JobSearchJobListingEntity job2 = sortJobs(o2);
+        return job2.getPublishedAt().compareTo(job1.getPublishedAt());
+      }
+
+      // Also in reverse order, most recent first
+      private JobSearchJobListingEntity sortJobs(JobGroup o1) {
+        List<JobSearchJobListingEntity> l1 = o1.getJobs().stream().sorted(new Comparator<JobSearchJobListingEntity>() {
+
+          @Override
+          public int compare(JobSearchJobListingEntity o1, JobSearchJobListingEntity o2) {
+            return o1.getPublishedAt().compareTo(o2.getPublishedAt());
+          }
+        }).toList();
+        o1.setJobs(l1);
+        return o1.getJobs().get(0);
+      }
+    }).toList();
+    return list;
+  }
+
 }

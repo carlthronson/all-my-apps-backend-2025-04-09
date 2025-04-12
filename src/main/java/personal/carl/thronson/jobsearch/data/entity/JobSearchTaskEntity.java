@@ -1,5 +1,7 @@
 package personal.carl.thronson.jobsearch.data.entity;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,6 +11,7 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,52 +35,29 @@ public class JobSearchTaskEntity extends Task {
   @JoinColumn(name = "status_id", nullable = true, unique = false)
   /**
    * For Json
-   * Every Task should include the Status
+   * Every Task should not include the Status
    */
-  @JsonManagedReference(value = "task-status")
+  @JsonManagedReference(value = "status-task")
   @Getter
   @Setter
   private JobSearchStatusEntity status;
 
   /**
-   * Every Task needs a Company
-   * And every Company needs a Task
+   *   WRONG A Task can haver zero or more Jobs
+   *   WRONG And a Job must have exactly one Task
+   * 
+   * The Task is created first
+   * And then the Job is created and refers to the Task
+   * Meaning Job is the owner of the relationship
+   * And the job table contains the task_id column
    */
-  @OneToOne
-  /**
-   * The Company is created first
-   * And then the Task is created and refers to the Company
-   * Meaning Task is the owner of the relationship
-   * And the task table contains the company_id column
-   */
-  @JoinColumn(name = "company_id", nullable = true, unique = false)
+  @OneToOne(mappedBy = "task")
   /**
    * For Json
-   * The Task should not include the Company
+   * The Task should include the Job
    */
-  @JsonBackReference(value = "company-task")
-  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-  @Getter
-  @Setter
-  private JobSearchCompanyEntity company;
-
-  /**
-   * Every Task needs a Job
-   * And every Job needs a Task
-   */
-  @OneToOne
-  /**
-   * The Job is created first
-   * And then the Task is created and refers to the Job
-   * Meaning Task is the owner of the relationship
-   * And the task table contains the job_id column
-   */
-  @JoinColumn(name = "job_id", nullable = true, unique = false)
-  /**
-   * For Json
-   * Every Task should include the Job
-   */
-  @JsonManagedReference(value = "task-job")
+  @JsonBackReference(value = "task-job")
+//  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   @Getter
   @Setter
   private JobSearchJobListingEntity job;

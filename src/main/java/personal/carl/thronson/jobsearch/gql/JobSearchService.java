@@ -59,27 +59,27 @@ public class JobSearchService {
   @Autowired
   private JobSearchTaskRepository jobSearchTaskRepository;
 
-  @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
+  @Scheduled(fixedRate = 15000) // Executes every 15 minutes
   public void importEngineerJobs() throws Exception {
     importJobs("engineer", 168, 35);
   }
 
-  @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
+  @Scheduled(fixedRate = 15000) // Executes every 15 minutes
   public void importSoftwareJobs() throws Exception {
     importJobs("software", 168, 35);
   }
 
-  @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
+  @Scheduled(fixedRate = 15000) // Executes every 15 minutes
   public void importDeveloperJobs() throws Exception {
     importJobs("developer", 168, 35);
   }
 
-  @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
+  @Scheduled(fixedRate = 15000) // Executes every 15 minutes
   public void importFullstackJobs() throws Exception {
     importJobs("fullstack", 168, 35);
   }
 
-  @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
+  @Scheduled(fixedRate = 15000) // Executes every 15 minutes
   public void importBackendJobs() throws Exception {
     importJobs("backend", 168, 35);
   }
@@ -106,17 +106,57 @@ public class JobSearchService {
 //      System.out.println("bad location: " + job.getLocation());
         continue;
       }
-      saveJob(job).flatMap(newEntity -> {
-        return saveCompany(newEntity).map(smth -> saveTask(newEntity, smth));
+      boolean duplicate = jobSearchJobListingRepository.findByLinkedinid(job.getLinkedinid()).isPresent();
+      if (duplicate) {
+        continue;
+      }
+      JobSearchStatusEntity statusEntity = jobSearchStatusRepository.findByName(JobSearchStatusEntity.JOB_SEARCH_STATUS_FOUND).get();
+      JobSearchTaskEntity taskEntity = new JobSearchTaskEntity();
+      job.setTask(taskEntity);
+      taskEntity.setStatus(statusEntity);
+      taskEntity.setName(job.getName());
+      jobSearchTaskRepository.save(taskEntity);
+
+      jobSearchCompanyRepository.findByName(job.getCompanyName()).ifPresentOrElse(company -> {
+        job.setCompany(company);
+      }, () -> {
+        JobSearchCompanyEntity companyEntity = new JobSearchCompanyEntity();
+        companyEntity.setName(job.getCompanyName());
+        companyEntity.setLabel(job.getCompanyName());
+        companyEntity.setLocation(job.getLocation());
+        job.setCompany(companyEntity);
+        jobSearchCompanyRepository.save(companyEntity);
       });
+
+      jobSearchJobListingRepository.save(job);      
+
+//      saveJob(job).flatMap(newEntity -> {
+//        return saveCompany(newEntity).map(smth -> saveTask(newEntity, smth));
+//      });
 //      System.out.println(job);
     }
+  }
+
+  private JobSearchJobListingEntity createJob(JobSearchCompanyEntity companyEntity) {
+    JobSearchJobListingEntity entity = new JobSearchJobListingEntity();
+    entity.setCompany(companyEntity);
+    return jobSearchJobListingRepository.save(entity);
+  }
+
+  private JobSearchCompanyEntity createCompany(JobSearchTaskEntity taskEntity) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  private JobSearchTaskEntity createTask(JobSearchJobListingEntity job) {
+    // TODO Auto-generated method stub
+    return null;
   }
 
   private Object saveTask(JobSearchJobListingEntity job, JobSearchCompanyEntity company) {
     return jobSearchStatusRepository.findByName(JobSearchStatusEntity.JOB_SEARCH_STATUS_FOUND).map(status -> {
       JobSearchTaskEntity task = new JobSearchTaskEntity();
-      task.setCompany(company);
+//      task.setCompany(company);
       task.setJob(job);
       task.setName(job.getName());
       task.setStatus(status);
@@ -136,7 +176,7 @@ public class JobSearchService {
             JobSearchCompanyEntity company = new JobSearchCompanyEntity();
             company.setName(job.getCompanyName());
             company.setLocation(job.getLocation());
-            company.setPhase(phase);
+//            company.setPhase(phase);
             return jobSearchCompanyRepository.save(company);            
           });
         });

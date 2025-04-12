@@ -54,52 +54,40 @@ public class DataInitializer implements CommandLineRunner {
       accountRepository.save(carl);
     });
 
-    // Create Job Search Phases
-    jobSearchPhaseRepository.findByName(JobSearchPhaseEntity.JOB_SEARCH_PHASE_SEARCH).ifPresentOrElse(jobSearchPhaseEntity -> {
-    }, () -> {
-      JobSearchPhaseEntity searchPhase = new JobSearchPhaseEntity();
-      searchPhase.setName(JobSearchPhaseEntity.JOB_SEARCH_PHASE_SEARCH);
-      searchPhase.setLabel("Search");
-      jobSearchPhaseRepository.save(searchPhase);
-    });
-
-    // Create Job Search Phases
-    jobSearchPhaseRepository.findByName(JobSearchPhaseEntity.JOB_SEARCH_PHASE_APPLY).ifPresentOrElse(jobSearchPhaseEntity -> {
-    }, () -> {
-      JobSearchPhaseEntity searchPhase = new JobSearchPhaseEntity();
-      searchPhase.setName(JobSearchPhaseEntity.JOB_SEARCH_PHASE_APPLY);
-      searchPhase.setLabel("Apply");
-      jobSearchPhaseRepository.save(searchPhase);
-    });
+    createPhase(JobSearchPhaseEntity.JOB_SEARCH_PHASE_SEARCH, "Search");
+    createPhase(JobSearchPhaseEntity.JOB_SEARCH_PHASE_ACCEPTED, "Accepted");
+    createPhase(JobSearchPhaseEntity.JOB_SEARCH_PHASE_CLOSED, "Closed");
     
     // Create Job Search Statuses
-    jobSearchStatusRepository.findByName(JobSearchStatusEntity.JOB_SEARCH_STATUS_FOUND).ifPresentOrElse(status -> {
-    }, () -> {
-      JobSearchStatusEntity foundStatus = new JobSearchStatusEntity();
-      foundStatus.setName(JobSearchStatusEntity.JOB_SEARCH_STATUS_FOUND);
-      foundStatus.setLabel("Found");
-      jobSearchPhaseRepository.findByName(JobSearchPhaseEntity.JOB_SEARCH_PHASE_SEARCH).map(phaseEntity -> {
-        System.out.println("Found start phase: " + phaseEntity);
-        foundStatus.setPhase(phaseEntity);
-        return phaseEntity;
-      }).orElseThrow(() -> new RuntimeException("Database Initialization Error"));
-      System.out.println("Save status: " + foundStatus);
-      jobSearchStatusRepository.save(foundStatus);
-    });
+    createStatus(JobSearchStatusEntity.JOB_SEARCH_STATUS_FOUND, "Found", JobSearchPhaseEntity.JOB_SEARCH_PHASE_SEARCH);
+    createStatus(JobSearchStatusEntity.JOB_SEARCH_STATUS_ACCEPTED, "Accepted", JobSearchPhaseEntity.JOB_SEARCH_PHASE_ACCEPTED);
+    createStatus(JobSearchStatusEntity.JOB_SEARCH_STATUS_CLOSED, "Closed", JobSearchPhaseEntity.JOB_SEARCH_PHASE_CLOSED);
+  }
 
-    // Create Job Search Statuses
-    jobSearchStatusRepository.findByName(JobSearchStatusEntity.JOB_SEARCH_STATUS_APPLY).ifPresentOrElse(status -> {
+  private void createStatus(String statusName, String statusLabel, String phaseName) {
+    jobSearchStatusRepository.findByName(statusName).ifPresentOrElse(status -> {
     }, () -> {
-      JobSearchStatusEntity applyStatus = new JobSearchStatusEntity();
-      applyStatus.setName(JobSearchStatusEntity.JOB_SEARCH_STATUS_APPLY);
-      applyStatus.setLabel("Apply");
-      jobSearchPhaseRepository.findByName(JobSearchPhaseEntity.JOB_SEARCH_PHASE_APPLY).map(phaseEntity -> {
+      JobSearchStatusEntity statusEntity = new JobSearchStatusEntity();
+      statusEntity.setName(statusName);
+      statusEntity.setLabel(statusLabel);
+      jobSearchPhaseRepository.findByName(phaseName).map(phaseEntity -> {
         System.out.println("Found start phase: " + phaseEntity);
-        applyStatus.setPhase(phaseEntity);
+        statusEntity.setPhase(phaseEntity);
         return phaseEntity;
       }).orElseThrow(() -> new RuntimeException("Database Initialization Error"));
-      System.out.println("Save status: " + applyStatus);
-      jobSearchStatusRepository.save(applyStatus);
+      System.out.println("Save status: " + statusEntity);
+      jobSearchStatusRepository.save(statusEntity);
+    });
+  }
+
+  private void createPhase(String phaseName, String phaseLabel) {
+    // Create Job Search Phases
+    jobSearchPhaseRepository.findByName(phaseName).ifPresentOrElse(jobSearchPhaseEntity -> {
+    }, () -> {
+      JobSearchPhaseEntity searchPhase = new JobSearchPhaseEntity();
+      searchPhase.setName(phaseName);
+      searchPhase.setLabel(phaseLabel);
+      jobSearchPhaseRepository.save(searchPhase);
     });
   }
 }

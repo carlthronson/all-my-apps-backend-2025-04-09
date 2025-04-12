@@ -4,12 +4,15 @@ import java.time.OffsetDateTime;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.Setter;
@@ -69,21 +72,43 @@ public class JobSearchJobListingEntity extends ProcessElement {
   private OffsetDateTime publishedAt;
 
   /**
-   * A Job must have exactly one Task
-   * And a Task must have exactly one Job
-   * 
-   * The Job is created first
-   * And then the Task is created and refers to the Job
-   * Meaning Task is the owner of the relationship
-   * And the task table contains the job_id column
+   * Every Job needs a Company
+   * But a Company does not need a Job
    */
-  @OneToOne(mappedBy = "job")
+  @ManyToOne
+  /**
+   * The Company is created first
+   * And then the Job is created and refers to the Company
+   * Meaning Job is the owner of the relationship
+   * And the job table contains the company_id column
+   */
+  @JoinColumn(name = "company_id", nullable = true, unique = false)
   /**
    * For Json
-   * The Job should not include the Task
+   * Every Job should include the Company
    */
-  @JsonBackReference(value = "task-job")
-  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+  @JsonBackReference(value = "job-company")
+  @Getter
+  @Setter
+  private JobSearchCompanyEntity company;
+
+  /**
+   * Every Job needs exactly one Task
+   * And every Task needs exactly one Job
+   */
+  @OneToOne
+  /**
+   * The Task is created first
+   * And then the Job is created and refers to the Task
+   * Meaning Job is the owner of the relationship
+   * And the job table contains the task_id column
+   */
+  @JoinColumn(name = "task_id", nullable = true, unique = false)
+  /**
+   * For Json
+   * Every Job should not include the Task
+   */
+  @JsonManagedReference(value = "task-job")
   @Getter
   @Setter
   private JobSearchTaskEntity task;

@@ -10,13 +10,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import personal.carl.thronson.jobsearch.data.entity.JobSearchStatusEntity;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchTaskEntity;
+import personal.carl.thronson.jobsearch.data.repo.JobSearchStatusRepository;
 import personal.carl.thronson.jobsearch.data.repo.JobSearchTaskRepository;
 
 @RestController
@@ -26,6 +29,9 @@ public class TaskController {
 
     @Autowired
     JobSearchTaskRepository service;
+
+    @Autowired
+    private JobSearchStatusRepository jobSearchStatusRepository;
 
     Logger logger = Logger.getLogger(JobController.class.getName());
 
@@ -62,4 +68,16 @@ public class TaskController {
       System.out.println("/task/count: " + result);
       return result;
     }
-}
+
+    @RequestMapping(path = "/task", method = RequestMethod.POST)
+    public Optional<JobSearchTaskEntity> save(@RequestBody JobSearchTaskUpdate request) {
+      logger.info("Request body: " + request);
+      String status = request.getStatus();
+      return service.findById(request.getId()).flatMap(taskEntity -> {
+        return jobSearchStatusRepository.findByName(status).map(statusEntity -> {
+          taskEntity.setStatus(statusEntity);
+          return service.save(taskEntity);
+        });
+      });
+    }
+  }

@@ -15,6 +15,6 @@ import personal.carl.thronson.workflow.data.ProcessElementRepository;
 @Transactional
 public interface JobSearchCompanyRepository extends ProcessElementRepository<JobSearchCompanyEntity> {
 
-  Page<JobSearchCompanyEntity> findAllByTasksIn(List<JobSearchTaskEntity> content, Pageable pageable);
+//  Page<JobSearchCompanyEntity> findAllByTasksIn(List<JobSearchTaskEntity> content, Pageable pageable);
 
 }

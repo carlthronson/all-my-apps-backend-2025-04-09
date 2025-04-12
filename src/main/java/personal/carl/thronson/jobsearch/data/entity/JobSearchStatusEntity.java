@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
@@ -21,7 +22,8 @@ import personal.carl.thronson.workflow.data.core.Status;
 public class JobSearchStatusEntity extends Status {
 
   public static final String JOB_SEARCH_STATUS_FOUND = "JOB_SEARCH_STATUS_FOUND";
-  public static final String JOB_SEARCH_STATUS_APPLY = "JOB_SEARCH_STATUS_APPLY";
+  public static final String JOB_SEARCH_STATUS_ACCEPTED = "JOB_SEARCH_STATUS_ACCEPTED";
+  public static final String JOB_SEARCH_STATUS_CLOSED = "JOB_SEARCH_STATUS_CLOSED";
 
   /**
    * Every Status needs a Phase
@@ -37,9 +39,9 @@ public class JobSearchStatusEntity extends Status {
   @JoinColumn(name = "phase_id", nullable = true, unique = false)
   /**
    * For Json
-   * Every Status should include the Phase
+   * Every Status should not include the Phase
    */
-  @JsonManagedReference(value = "status-phase")
+  @JsonManagedReference(value = "phase-status")
   @Getter
   @Setter
   private JobSearchPhaseEntity phase;
@@ -53,14 +55,15 @@ public class JobSearchStatusEntity extends Status {
    * Meaning Task is the owner of the relationship
    * And the task table contains the status_id column
    */
-  @OneToMany(mappedBy = "status")
+  @OneToMany(mappedBy = "status", fetch = FetchType.EAGER)
   /**
    * For Json
-   * The Status should not include the Tasks
+   * The Status should include the Tasks
    */
-  @JsonBackReference(value = "task-status")
-  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+  @JsonBackReference(value = "status-task")
+//  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   @Getter
   @Setter
   private List<JobSearchTaskEntity> tasks;
+
 }
