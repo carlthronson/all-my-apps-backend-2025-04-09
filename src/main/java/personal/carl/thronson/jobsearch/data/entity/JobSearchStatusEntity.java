@@ -4,8 +4,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Inheritance;
@@ -21,9 +19,10 @@ import personal.carl.thronson.workflow.data.core.Status;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class JobSearchStatusEntity extends Status {
 
-  public static final String JOB_SEARCH_STATUS_FOUND = "JOB_SEARCH_STATUS_FOUND";
-  public static final String JOB_SEARCH_STATUS_ACCEPTED = "JOB_SEARCH_STATUS_ACCEPTED";
+  public static final String JOB_SEARCH_STATUS_NEW = "JOB_SEARCH_STATUS_NEW";
+  public static final String JOB_SEARCH_STATUS_MAYBE = "JOB_SEARCH_STATUS_MAYBE";
   public static final String JOB_SEARCH_STATUS_CLOSED = "JOB_SEARCH_STATUS_CLOSED";
+  public static final String JOB_SEARCH_STATUS_MATCH = "JOB_SEARCH_STATUS_MATCH";
 
   /**
    * Every Status needs a Phase

@@ -54,13 +54,15 @@ public class DataInitializer implements CommandLineRunner {
       accountRepository.save(carl);
     });
 
-    createPhase(JobSearchPhaseEntity.JOB_SEARCH_PHASE_SEARCH, "Search");
-    createPhase(JobSearchPhaseEntity.JOB_SEARCH_PHASE_ACCEPTED, "Accepted");
+    createPhase(JobSearchPhaseEntity.JOB_SEARCH_PHASE_NEW, "New");
+    createPhase(JobSearchPhaseEntity.JOB_SEARCH_PHASE_MAYBE, "Maybe");
+    createPhase(JobSearchPhaseEntity.JOB_SEARCH_PHASE_MATCH, "Match");
     createPhase(JobSearchPhaseEntity.JOB_SEARCH_PHASE_CLOSED, "Closed");
     
     // Create Job Search Statuses
-    createStatus(JobSearchStatusEntity.JOB_SEARCH_STATUS_FOUND, "Found", JobSearchPhaseEntity.JOB_SEARCH_PHASE_SEARCH);
-    createStatus(JobSearchStatusEntity.JOB_SEARCH_STATUS_ACCEPTED, "Accepted", JobSearchPhaseEntity.JOB_SEARCH_PHASE_ACCEPTED);
+    createStatus(JobSearchStatusEntity.JOB_SEARCH_STATUS_NEW, "New", JobSearchPhaseEntity.JOB_SEARCH_PHASE_NEW);
+    createStatus(JobSearchStatusEntity.JOB_SEARCH_STATUS_MAYBE, "Maybe", JobSearchPhaseEntity.JOB_SEARCH_PHASE_MAYBE);
+    createStatus(JobSearchStatusEntity.JOB_SEARCH_STATUS_MATCH, "Match", JobSearchPhaseEntity.JOB_SEARCH_PHASE_MATCH);
     createStatus(JobSearchStatusEntity.JOB_SEARCH_STATUS_CLOSED, "Closed", JobSearchPhaseEntity.JOB_SEARCH_PHASE_CLOSED);
   }
 

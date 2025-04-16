@@ -3,9 +3,6 @@ package personal.carl.thronson.jobsearch.data.entity;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Inheritance;
@@ -19,9 +16,10 @@ import personal.carl.thronson.workflow.data.core.Phase;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class JobSearchPhaseEntity extends Phase {
 
-  public static final String JOB_SEARCH_PHASE_SEARCH = "JOB_SEARCH_PHASE_SEARCH";
-  public static final String JOB_SEARCH_PHASE_ACCEPTED = "JOB_SEARCH_PHASE_APPLY";
+  public static final String JOB_SEARCH_PHASE_NEW = "JOB_SEARCH_PHASE_NEW";
+  public static final String JOB_SEARCH_PHASE_MAYBE = "JOB_SEARCH_PHASE_MAYBE";
   public static final String JOB_SEARCH_PHASE_CLOSED = "JOB_SEARCH_PHASE_CLOSED";
+  public static final String JOB_SEARCH_PHASE_MATCH = "JOB_SEARCH_PHASE_MATCH";
 
   /**
    * A Phase can haver zero or more Statuses

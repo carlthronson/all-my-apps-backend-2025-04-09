@@ -110,7 +110,7 @@ public class JobSearchService {
       if (duplicate) {
         continue;
       }
-      JobSearchStatusEntity statusEntity = jobSearchStatusRepository.findByName(JobSearchStatusEntity.JOB_SEARCH_STATUS_FOUND).get();
+      JobSearchStatusEntity statusEntity = jobSearchStatusRepository.findByName(JobSearchStatusEntity.JOB_SEARCH_STATUS_NEW).get();
       JobSearchTaskEntity taskEntity = new JobSearchTaskEntity();
       job.setTask(taskEntity);
       taskEntity.setStatus(statusEntity);
@@ -154,7 +154,7 @@ public class JobSearchService {
   }
 
   private Object saveTask(JobSearchJobListingEntity job, JobSearchCompanyEntity company) {
-    return jobSearchStatusRepository.findByName(JobSearchStatusEntity.JOB_SEARCH_STATUS_FOUND).map(status -> {
+    return jobSearchStatusRepository.findByName(JobSearchStatusEntity.JOB_SEARCH_STATUS_NEW).map(status -> {
       JobSearchTaskEntity task = new JobSearchTaskEntity();
 //      task.setCompany(company);
       task.setJob(job);
@@ -172,7 +172,7 @@ public class JobSearchService {
       return Optional.of(existingCompany);
         }).orElseGet(() -> {
           System.out.println("Company NOT found in DB");
-          return jobSearchPhaseRepository.findByName(JobSearchPhaseEntity.JOB_SEARCH_PHASE_SEARCH).map(phase -> {
+          return jobSearchPhaseRepository.findByName(JobSearchPhaseEntity.JOB_SEARCH_PHASE_NEW).map(phase -> {
             JobSearchCompanyEntity company = new JobSearchCompanyEntity();
             company.setName(job.getCompanyName());
             company.setLocation(job.getLocation());
