@@ -119,6 +119,7 @@ public class JobSearchService {
         }
         continue;
       }
+      job.setKeywords(List.of(keyword));
       JobSearchStatusEntity statusEntity = jobSearchStatusRepository.findByName(JobSearchStatusEntity.JOB_SEARCH_STATUS_NEW).get();
       JobSearchTaskEntity taskEntity = new JobSearchTaskEntity();
       job.setTask(taskEntity);
