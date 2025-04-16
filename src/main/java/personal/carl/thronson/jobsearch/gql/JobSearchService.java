@@ -106,8 +106,14 @@ public class JobSearchService {
 //      System.out.println("bad location: " + job.getLocation());
         continue;
       }
-      boolean duplicate = jobSearchJobListingRepository.findByLinkedinid(job.getLinkedinid()).isPresent();
-      if (duplicate) {
+      Optional<JobSearchJobListingEntity> possibleExistingJob = jobSearchJobListingRepository.findByLinkedinid(job.getLinkedinid());
+      if (possibleExistingJob.isPresent()) {
+        JobSearchJobListingEntity existingJob = possibleExistingJob.get();
+        List<String> keywords = existingJob.getKeywords();
+        if (!keywords.contains(keyword)) {
+          keywords.add(keyword);
+          jobSearchJobListingRepository.save(existingJob);
+        }
         continue;
       }
       JobSearchStatusEntity statusEntity = jobSearchStatusRepository.findByName(JobSearchStatusEntity.JOB_SEARCH_STATUS_NEW).get();
