@@ -110,6 +110,9 @@ public class JobSearchService {
       if (possibleExistingJob.isPresent()) {
         JobSearchJobListingEntity existingJob = possibleExistingJob.get();
         List<String> keywords = existingJob.getKeywords();
+        if (keywords == null) {
+          keywords = new ArrayList<>();
+        }
         if (!keywords.contains(keyword)) {
           keywords.add(keyword);
           jobSearchJobListingRepository.save(existingJob);
