@@ -2,9 +2,11 @@ package personal.carl.thronson.security;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -14,12 +16,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.servlet.http.HttpServletResponse;
+import graphql.schema.DataFetchingEnvironment;
 import personal.carl.thronson.security.data.core.AccountAuthorizationPrincipal;
 import personal.carl.thronson.security.data.entity.AccountEntity;
 import personal.carl.thronson.security.data.entity.ResetPasswordTokenEntity;
 import personal.carl.thronson.security.data.repo.AccountRepository;
 import personal.carl.thronson.security.data.repo.ResetPasswordTokenRepository;
+import personal.carl.thronson.security.data.repo.RoleRepository;
 
 @Service
 @Transactional
@@ -29,6 +32,9 @@ public class AuthorizationService {
 
   @Autowired
   AccountRepository accountRepository;
+
+  @Autowired
+  private RoleRepository roleRepository;
 
   @Autowired
   private PasswordEncoder passwordEncoder;
@@ -42,8 +48,8 @@ public class AuthorizationService {
   @Autowired
   private AuthenticationManager authenticationManager;
 
-  @Autowired
-  private HttpServletResponse response;
+//  @Autowired
+//  private HttpServletResponse response;
 
   public boolean resetPassword(String email, String password, String token) {
     return accountRepository.findByEmail(email).map(accountEntity -> {
@@ -83,8 +89,10 @@ public class AuthorizationService {
     SecurityContextHolder.getContext().setAuthentication(authentication);
     // Generate a JWT token for future requests
     String token = jwtTokenUtil.generateToken(email, authentication.getAuthorities());
-    response.setHeader("Authorization", "Bearer " + token);
-    return accountRepository.findByEmail(email);
+    return accountRepository.findByEmail(email).map(accountEntity -> {
+      accountEntity.setAuthToken(token);
+      return accountEntity;
+    });
   }
 
   public String generateResetPasswordToken(String email) {
@@ -120,5 +128,42 @@ public class AuthorizationService {
       }
     }
     return Optional.empty();
+  }
+
+  public Optional<AccountEntity> signup(
+      @Argument(name = "email") String email,
+      @Argument(name = "password") String password,
+      @Argument(name = "name") String name,
+      DataFetchingEnvironment environment) throws Exception {
+    // TODO Auto-generated method stub
+    logger.info(String.format("fellowSignup: email [%s] password [%s]", email, password));
+    return accountRepository.findByEmail(email).map(accountEntity -> {
+        logger.info("This account already exists, so make sure it's the same person");
+        this.login(email, password);
+        return accountEntity;
+    }).or(() -> {
+      return this.createNewAccount(email, password, "ADMIN").map(account -> {
+        this.login(email, password);
+//        FellowEntity newEntity = new FellowEntity();
+//        newEntity.setAccount(account);
+//        setFellowFields(newEntity, name, isBetaTester, isCollaborator, message, referralCode, isReferralPartner);
+//        return fellowRepository.save(newEntity);
+        return account;
+      });
+    });
+  }
+
+  private Optional<AccountEntity> createNewAccount(String email, String password, String role) {
+    logger.info("This email has never been used");
+    AccountEntity newAccountEntity = new AccountEntity();
+    newAccountEntity.setEmail(email);
+    if (password != null) {
+      newAccountEntity.setPassword(passwordEncoder.encode(password));
+    }
+    newAccountEntity.setEnabled(true);
+    return roleRepository.findByName(role).map(roleEntity -> {
+      newAccountEntity.setRoles(Set.of(roleEntity));
+      return accountRepository.save(newAccountEntity);
+    });
   }
 }

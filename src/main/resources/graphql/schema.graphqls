@@ -1,4 +1,5 @@
 type Query {
+  VerifyAuthToken: Account
   getMyAccount: Account
   getJobSearchPhases: [ProcessElement!]!
   getJobSearchStatuses: [ProcessElement!]!
@@ -16,6 +17,12 @@ type Mutation {
   generateResetPasswordToken(email: String!): String!
   resetPassword(email: String!, password: String!, token: String!): Boolean!
   login(email: String!, password: String!): Account!
+
+  signup(
+      email: String!,
+      password: String!,
+      name: String!
+    ): Account
 
   createJobListing(
     name: String
@@ -67,7 +74,9 @@ enum PaymentStatus {
 
 type Account {
   id: ID!,
+  email: String!
   roles: [String!]!
+  authToken: String
 }
 
 type ProcessElement {

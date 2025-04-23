@@ -4,6 +4,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import personal.carl.thronson.jobsearch.data.entity.JobSearchPhaseEntity;
@@ -24,6 +25,9 @@ public class DataInitializer implements CommandLineRunner {
 
   @Autowired
   private AccountRepository accountRepository;
+
+  @Autowired
+  private PasswordEncoder passwordEncoder;
 
   @Autowired
   private JobSearchPhaseRepository jobSearchPhaseRepository;
@@ -47,11 +51,25 @@ public class DataInitializer implements CommandLineRunner {
     }, () -> {
       AccountEntity carl = new AccountEntity();
       carl.setEmail("carlthronson@gmail.com");
+      carl.setPassword(passwordEncoder.encode("8Xbk2334$&@"));
       roleRepository.findByName(Role.ADMIN_ROLE_NAME).map(roleEntity -> {
         carl.setRoles(Set.of(roleEntity));
         return roleEntity;
       }).orElseThrow(() -> new RuntimeException("Database Initialization Error"));
       accountRepository.save(carl);
+    });
+
+    // Create my account
+    accountRepository.findByEmail("krupa52012@gmail.com").ifPresentOrElse(roleEntity -> {
+    }, () -> {
+      AccountEntity krupa = new AccountEntity();
+      krupa.setEmail("krupa52012@gmail.com");
+      krupa.setPassword(passwordEncoder.encode("2wta018"));
+      roleRepository.findByName(Role.ADMIN_ROLE_NAME).map(roleEntity -> {
+        krupa.setRoles(Set.of(roleEntity));
+        return roleEntity;
+      }).orElseThrow(() -> new RuntimeException("Database Initialization Error"));
+      accountRepository.save(krupa);
     });
 
     createPhase(JobSearchPhaseEntity.JOB_SEARCH_PHASE_NEW, "New");

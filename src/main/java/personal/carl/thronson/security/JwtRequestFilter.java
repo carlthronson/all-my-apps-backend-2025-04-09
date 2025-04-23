@@ -15,6 +15,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 
 import jakarta.servlet.FilterChain;
@@ -66,7 +67,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
       isValid = jwtTokenUtil.validateToken(jwtToken);
     } catch (TokenExpiredException ex) {
       // If the token has expired, move on to next request filter
-      logger.warning(ex.getMessage());
+      logger.warning("Token expired: " + ex.getMessage());
+      chain.doFilter(request, response);
+      return;
+    } catch (JWTDecodeException ex) {
+      // If the token is invalid, move on to next request filter
+      logger.warning("Token invalid: " + ex.getMessage());
       chain.doFilter(request, response);
       return;
     }
