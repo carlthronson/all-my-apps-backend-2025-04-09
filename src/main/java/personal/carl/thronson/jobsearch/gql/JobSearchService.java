@@ -36,6 +36,8 @@ import reactor.util.concurrent.Queues;
 @Transactional
 public class JobSearchService {
 
+  private static final int MAX_JOB_SEARCH_RESULTS = 1000;
+
   private static String FORMAT_LINKEDIN_SEARCH_PARAMETERS = "keywords=%s&f_TPR=r%d&origin=JOBS_HOME_SEARCH_BUTTON&refresh=true&start=%d";
 
   private static String PROTOCOL_HTTPS = "https";
@@ -61,27 +63,27 @@ public class JobSearchService {
 
   @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
   public void importEngineerJobs() throws Exception {
-    importJobs("engineer", 168, 35);
+    importJobs("engineer", 168, MAX_JOB_SEARCH_RESULTS);
   }
 
   @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
   public void importSoftwareJobs() throws Exception {
-    importJobs("software", 168, 35);
+    importJobs("software", 168, MAX_JOB_SEARCH_RESULTS);
   }
 
   @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
   public void importDeveloperJobs() throws Exception {
-    importJobs("developer", 168, 35);
+    importJobs("developer", 168, MAX_JOB_SEARCH_RESULTS);
   }
 
   @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
   public void importFullstackJobs() throws Exception {
-    importJobs("fullstack", 168, 35);
+    importJobs("fullstack", 168, MAX_JOB_SEARCH_RESULTS);
   }
 
   @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
   public void importBackendJobs() throws Exception {
-    importJobs("backend", 168, 35);
+    importJobs("backend", 168, MAX_JOB_SEARCH_RESULTS);
   }
 
   private void importJobs(String keyword, int hours, int max) throws Exception {
