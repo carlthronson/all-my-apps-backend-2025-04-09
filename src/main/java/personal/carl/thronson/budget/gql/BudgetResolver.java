@@ -2,6 +2,7 @@ package personal.carl.thronson.budget.gql;
 
 import java.math.BigDecimal;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -10,15 +11,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import graphql.schema.DataFetchingEnvironment;
 import jakarta.transaction.Transactional;
+import personal.carl.thronson.budget.core.Forecast;
 import personal.carl.thronson.budget.data.entity.TransactionEntity;
 import personal.carl.thronson.budget.data.repo.TransactionRepository;
 
 @RestController
 @Transactional
-public class TransactionResolver {
+public class BudgetResolver {
 
   @Autowired
   private TransactionRepository transactionRepository;
+
+  @Autowired
+  private BudgetService service;
 
   @QueryMapping(name = "getTransactions")
   public List<TransactionEntity> getTransactions(
@@ -68,4 +73,13 @@ public class TransactionResolver {
       return true;
     }).orElse(false);
   }
+
+  @QueryMapping(name = "getForecast")
+  public Forecast getForecast(
+      @Argument(name = "startBalance") int startBalance,
+      @Argument(name = "cash") int cash,
+      DataFetchingEnvironment environment) throws Exception {
+    return service.getForecast(startBalance, cash);
+  }
+
 }

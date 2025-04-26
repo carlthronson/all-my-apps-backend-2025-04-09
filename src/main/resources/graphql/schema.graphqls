@@ -7,6 +7,24 @@ type Query {
   getJobSearchJobListings: [ProcessElement!]!
   getJobSearchCompanies: [ProcessElement!]!
   getTransactions: [Transaction]!
+  getForecast(
+    startBalance: Int!
+    cash: Int!
+  ): Forecast
+}
+
+type Forecast {
+  startingBalance: Int
+  cash: Int
+  endingDate: DateTime
+  firstNegativeBalance: DateTime
+  maxDebt:Int
+  dailyBalances: [DailyBalance!]!
+}
+
+type DailyBalance {
+  date: DateTime
+  endingBalance: String
 }
 
 type Transaction {
