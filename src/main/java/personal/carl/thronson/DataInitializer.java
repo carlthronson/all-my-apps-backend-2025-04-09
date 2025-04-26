@@ -1,5 +1,6 @@
 package personal.carl.thronson;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import personal.carl.thronson.budget.data.entity.TransactionEntity;
+import personal.carl.thronson.budget.data.repo.TransactionRepository;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchPhaseEntity;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchStatusEntity;
 import personal.carl.thronson.jobsearch.data.repo.JobSearchPhaseRepository;
@@ -34,6 +37,9 @@ public class DataInitializer implements CommandLineRunner {
 
   @Autowired
   private JobSearchStatusRepository jobSearchStatusRepository;
+
+  @Autowired
+  private TransactionRepository transactionRepository;
 
   @Override
   public void run(String... args) throws Exception {
@@ -76,12 +82,62 @@ public class DataInitializer implements CommandLineRunner {
     createPhase(JobSearchPhaseEntity.JOB_SEARCH_PHASE_MAYBE, "Maybe");
     createPhase(JobSearchPhaseEntity.JOB_SEARCH_PHASE_MATCH, "Match");
     createPhase(JobSearchPhaseEntity.JOB_SEARCH_PHASE_CLOSED, "Closed");
-    
+
     // Create Job Search Statuses
     createStatus(JobSearchStatusEntity.JOB_SEARCH_STATUS_NEW, "New", JobSearchPhaseEntity.JOB_SEARCH_PHASE_NEW);
     createStatus(JobSearchStatusEntity.JOB_SEARCH_STATUS_MAYBE, "Maybe", JobSearchPhaseEntity.JOB_SEARCH_PHASE_MAYBE);
     createStatus(JobSearchStatusEntity.JOB_SEARCH_STATUS_MATCH, "Match", JobSearchPhaseEntity.JOB_SEARCH_PHASE_MATCH);
-    createStatus(JobSearchStatusEntity.JOB_SEARCH_STATUS_CLOSED, "Closed", JobSearchPhaseEntity.JOB_SEARCH_PHASE_CLOSED);
+    createStatus(JobSearchStatusEntity.JOB_SEARCH_STATUS_CLOSED, "Closed",
+        JobSearchPhaseEntity.JOB_SEARCH_PHASE_CLOSED);
+
+    initTransactions();
+  }
+
+  private void initTransactions() {
+    if (transactionRepository.count() == 0) {
+      createTransaction("IRS",520,10,"payment");
+      createTransaction("Safeco",0,3,"payment");
+      createTransaction("Liberty Mutual",354.76,18,"payment");
+      createTransaction("MB Car Loan",680.73,10,"payment");
+      createTransaction("Mortgage",5086,1,"payment");
+      createTransaction("Home Equity",4100,19,"payment");
+      createTransaction("Bank of America",1600,17,"payment");
+      createTransaction("Ax",2177,2,"payment");
+      createTransaction("DSC Card Carl",440,19,"payment");
+      createTransaction("DSC Card Krupa",400,31,"payment");
+      createTransaction("Garbage",100,20,"payment");
+      createTransaction("PG&E",1000,31,"payment");
+      createTransaction("Water",100,6,"payment");
+      createTransaction("WF Visa",200,12,"payment");
+      createTransaction("Xfinity",300,31,"payment");
+      createTransaction("DSC Loan Carl",788,4,"payment");
+      createTransaction("DSC Loan Krupa",552.6,6,"payment");
+      createTransaction("Jason Rent",1920,4,"payment");
+      createTransaction("First Paycheck",4986,15,"deposit");
+      createTransaction("Second Paycheck",4986,31,"deposit");
+      createTransaction("Fidelity Visa",600,18,"payment");
+      createTransaction("Jason MG&E",0,1,"payment");
+      createTransaction("Jason Rent insurance",0,1,"payment");
+      createTransaction("Carl Social Security",2600,22,"deposit");
+      createTransaction("Rent",4600,7,"deposit");
+    }
+  }
+
+  private void createTransaction(String name, double d, int dayOfMonth, String transactionType) {
+    this.createTransaction(name, new BigDecimal(d), dayOfMonth, transactionType);
+  }
+
+  private void createTransaction(String name, int i, int dayOfMonth, String transactionType) {
+    this.createTransaction(name, new BigDecimal(i), dayOfMonth, transactionType);
+  }
+
+  private void createTransaction(String name, BigDecimal amount, int dayOfMonth, String transactionType) {
+    TransactionEntity entity = new TransactionEntity();
+    entity.setAmount(amount);
+    entity.setName(name);
+    entity.setDayOfMonth(dayOfMonth);
+    entity.setTransactionType(transactionType);
+    transactionRepository.save(entity);
   }
 
   private void createStatus(String statusName, String statusLabel, String phaseName) {

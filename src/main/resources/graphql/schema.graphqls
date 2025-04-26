@@ -6,6 +6,15 @@ type Query {
   getJobSearchTasks: [JobSearchTask!]!
   getJobSearchJobListings: [ProcessElement!]!
   getJobSearchCompanies: [ProcessElement!]!
+  getTransactions: [Transaction]!
+}
+
+type Transaction {
+  id: ID!
+  name: String!
+  amount: String!
+  dayOfMonth: Int!
+  transactionType: String!
 }
 
 type Subscription {
@@ -53,6 +62,24 @@ type Mutation {
     companyId: ID!
   ): ProcessElement
 
+  createTransaction(
+    name: String!
+    amount: String!
+    dayOfMonth: Int!
+    transactionType: String!
+  ): ID!
+
+  updateTransaction(
+    id: ID!
+    name: String!
+    amount: String!
+    dayOfMonth: Int!
+    transactionType: String!
+  ): Boolean!
+
+  deleteTransaction(
+    id: ID!
+  ): Boolean!
 }
 
 scalar Long
