@@ -1,20 +1,12 @@
 package personal.carl.thronson.budget.data.entity;
 
-import java.math.BigDecimal;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
-import lombok.Getter;
-import lombok.Setter;
-import personal.carl.thronson.core.BaseObject;
+import personal.carl.thronson.budget.data.core.Transaction;
 
 @Entity(name = "budget_transaction")
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public class TransactionEntity extends BaseObject {
+public class TransactionEntity extends Transaction {
 
-  @Getter @Setter private String name;
-  @Getter @Setter private BigDecimal amount;
-  @Getter @Setter private int dayOfMonth;
-  @Getter @Setter private String transactionType;
 }

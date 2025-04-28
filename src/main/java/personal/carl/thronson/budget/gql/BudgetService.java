@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import personal.carl.thronson.budget.core.Forecast;
 import personal.carl.thronson.budget.data.core.DailyBalance;
+import personal.carl.thronson.budget.data.core.Transaction;
 import personal.carl.thronson.budget.data.entity.TransactionEntity;
 import personal.carl.thronson.budget.data.repo.TransactionRepository;
 
@@ -41,7 +42,8 @@ public class BudgetService {
     int firstNegativeBalance = 0;
     OffsetDateTime dateOfMaxDebt = startDate;
     for (OffsetDateTime date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
-      runningBalance -= cash;
+      BigDecimal startingBalance = new BigDecimal(runningBalance);
+//      runningBalance -= cash;
       if (runningBalance < 0 && firstNegativeDate == null) {
         firstNegativeDate = date;
         firstNegativeBalance = runningBalance;
@@ -51,12 +53,18 @@ public class BudgetService {
         dateOfMaxDebt = date;
       }
       // Perform your operations with each date here
-      List<TransactionEntity> todaysPayments = new ArrayList<>();
+      List<Transaction> todaysPayments = new ArrayList<>();
+      Transaction cashPayment = new Transaction();
+      cashPayment.setAmount(new BigDecimal(cash));
+      cashPayment.setName("Cash");
+      cashPayment.setTransactionType("payment");
+      todaysPayments.add(cashPayment);
       for (TransactionEntity payment : payments) {
         if (isDueOn(payment, date)) {
           todaysPayments.add(payment);
         }
       }
+
       if (!todaysPayments.isEmpty()) {
         logger.info("");
         logger.info("******************************************");
@@ -64,7 +72,7 @@ public class BudgetService {
         logger.info("Starting balance: " + runningBalance);
         logger.info("");
       }
-      for (TransactionEntity payment : todaysPayments) {
+      for (Transaction payment : todaysPayments) {
         String type = payment.getTransactionType();
         switch (type) {
         case "payment":
@@ -82,6 +90,8 @@ public class BudgetService {
         logger.info("Ending balance: " + runningBalance);
         DailyBalance balance = new DailyBalance();
         balance.setDate(date);
+        balance.setStartingBalance(startingBalance);
+        balance.setTransactions(todaysPayments);
         balance.setEndingBalance(new BigDecimal(runningBalance));
         dailyBalances.add(balance);
       }

@@ -24,11 +24,13 @@ type Forecast {
 
 type DailyBalance {
   date: DateTime
+  startingBalance: String
+  transactions: [Transaction!]!
   endingBalance: String
 }
 
 type Transaction {
-  id: ID!
+  id: ID
   name: String!
   amount: String!
   dayOfMonth: Int!
