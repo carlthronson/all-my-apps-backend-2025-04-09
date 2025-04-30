@@ -16,14 +16,14 @@ type Query {
 type Forecast {
   startingBalance: Int
   cash: Int
-  endingDate: DateTime
-  firstNegativeBalance: DateTime
+  endingDate: Date
+  firstNegativeBalance: Date
   maxDebt:Int
-  dailyBalances: [DailyBalance!]!
+  dailyActivity: [DailyActivity!]!
 }
 
-type DailyBalance {
-  date: DateTime
+type DailyActivity {
+  date: Date
   startingBalance: String
   transactions: [Transaction!]!
   endingBalance: String
@@ -35,6 +35,8 @@ type Transaction {
   amount: String!
   dayOfMonth: Int!
   transactionType: String!
+  startDate: Date
+  endDate: Date
 }
 
 type Subscription {
@@ -87,6 +89,8 @@ type Mutation {
     amount: String!
     dayOfMonth: Int!
     transactionType: String!
+    startDate: Date
+    endDate: Date
   ): ID!
 
   updateTransaction(
@@ -95,6 +99,8 @@ type Mutation {
     amount: String!
     dayOfMonth: Int!
     transactionType: String!
+    startDate: Date
+    endDate: Date
   ): Boolean!
 
   deleteTransaction(
@@ -105,6 +111,7 @@ type Mutation {
 scalar Long
 scalar Url
 scalar DateTime
+scalar Date
 
 directive @Pattern(regexp: String!) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 

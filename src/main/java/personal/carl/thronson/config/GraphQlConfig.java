@@ -14,6 +14,7 @@ public class GraphQlConfig {
     return wiringBuilder -> wiringBuilder
         .scalar(ExtendedScalars.GraphQLLong)
         .scalar(ExtendedScalars.Url)
-        .scalar(ExtendedScalars.DateTime);
+        .scalar(ExtendedScalars.DateTime)
+        .scalar(ExtendedScalars.Date);
   }
 }

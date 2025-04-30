@@ -1,6 +1,7 @@
 package personal.carl.thronson.budget.gql;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,12 +38,18 @@ public class BudgetResolver {
       @Argument(name = "amount") BigDecimal amount,
       @Argument(name = "dayOfMonth") int dayOfMonth,
       @Argument(name = "transactionType") String transactionType,
+      @Argument(name = "startDate") LocalDate startDate,
+      @Argument(name = "endDate") LocalDate endDate,
       DataFetchingEnvironment environment) throws Exception {
     TransactionEntity entity = new TransactionEntity();
     entity.setAmount(amount);
     entity.setName(name);
     entity.setDayOfMonth(dayOfMonth);
     entity.setTransactionType(transactionType);
+    if (startDate != null)
+      entity.setStartDate(startDate);
+    if (endDate != null)
+      entity.setEndDate(endDate);
     return transactionRepository.save(entity).getId();
   }
 
@@ -53,12 +60,18 @@ public class BudgetResolver {
       @Argument(name = "amount") BigDecimal amount,
       @Argument(name = "dayOfMonth") int dayOfMonth,
       @Argument(name = "transactionType") String transactionType,
+      @Argument(name = "startDate") LocalDate startDate,
+      @Argument(name = "endDate") LocalDate endDate,
       DataFetchingEnvironment environment) throws Exception {
     return transactionRepository.findById(id).map(entity -> {
       entity.setName(name);
       entity.setAmount(amount);
       entity.setDayOfMonth(dayOfMonth);
       entity.setTransactionType(transactionType);
+      if (startDate != null)
+        entity.setStartDate(startDate);
+      if (endDate != null)
+        entity.setEndDate(endDate);
       transactionRepository.save(entity);
       return true;
     }).orElse(false);

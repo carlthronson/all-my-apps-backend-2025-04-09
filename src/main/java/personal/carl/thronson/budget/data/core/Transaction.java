@@ -1,6 +1,7 @@
 package personal.carl.thronson.budget.data.core;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
@@ -14,4 +15,6 @@ public class Transaction extends BaseObject {
   @Getter @Setter private BigDecimal amount;
   @Getter @Setter private int dayOfMonth;
   @Getter @Setter private String transactionType;
+  @Getter @Setter private LocalDate startDate;
+  @Getter @Setter private LocalDate endDate;
 }

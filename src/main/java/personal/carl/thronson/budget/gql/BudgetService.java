@@ -1,10 +1,7 @@
 package personal.carl.thronson.budget.gql;
 
 import java.math.BigDecimal;
-import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.time.Month;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -14,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import personal.carl.thronson.budget.core.Forecast;
-import personal.carl.thronson.budget.data.core.DailyBalance;
+import personal.carl.thronson.budget.data.core.DailyActivity;
 import personal.carl.thronson.budget.data.core.Transaction;
 import personal.carl.thronson.budget.data.entity.TransactionEntity;
 import personal.carl.thronson.budget.data.repo.TransactionRepository;
@@ -31,17 +28,17 @@ public class BudgetService {
   public Forecast getForecast(int startBalance, int cash) {
     List<TransactionEntity> payments = this.transactionRepository.findAll();
 
-    List<DailyBalance> dailyBalances = new ArrayList<>();
+    List<DailyActivity> dailyActivity = new ArrayList<>();
     int runningBalance = startBalance;
     int maxDebt = runningBalance;
 
-    OffsetDateTime startDate = OffsetDateTime.now();
-    OffsetDateTime endDate = startDate.plusMonths(24); // Iterate for one month into the future
+    LocalDate startDate = LocalDate.now();
+    LocalDate endDate = startDate.plusMonths(24); // Iterate for one month into the future
 
-    OffsetDateTime firstNegativeDate = null;
+    LocalDate firstNegativeDate = null;
     int firstNegativeBalance = 0;
-    OffsetDateTime dateOfMaxDebt = startDate;
-    for (OffsetDateTime date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
+    LocalDate dateOfMaxDebt = startDate;
+    for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
       BigDecimal startingBalance = new BigDecimal(runningBalance);
 //      runningBalance -= cash;
       if (runningBalance < 0 && firstNegativeDate == null) {
@@ -60,8 +57,43 @@ public class BudgetService {
       cashPayment.setTransactionType("payment");
       todaysPayments.add(cashPayment);
       for (TransactionEntity payment : payments) {
+        switch (date.getDayOfWeek()) {
+        case SATURDAY:
+        case SUNDAY:
+          continue;
+        default:
+        }
         if (isDueOn(payment, date)) {
           todaysPayments.add(payment);
+        } else {
+          // if today is Friday, check if payment is due Saturday
+          switch (date.getDayOfWeek()) {
+          case FRIDAY:
+            LocalDate saturday = date.plusDays(1);
+            if (isDueOn(payment, saturday)) {
+              todaysPayments.add(payment);
+            } else {
+              LocalDate sunday = saturday.plusDays(1);
+              if (isDueOn(payment, sunday)) {
+                todaysPayments.add(payment);
+              } else {
+              }
+            }
+          case MONDAY:
+            break;
+          case SATURDAY:
+            break;
+          case SUNDAY:
+            break;
+          case THURSDAY:
+            break;
+          case TUESDAY:
+            break;
+          case WEDNESDAY:
+            break;
+          default:
+            break;
+          }
         }
       }
 
@@ -88,12 +120,12 @@ public class BudgetService {
       if (!todaysPayments.isEmpty()) {
         logger.info("");
         logger.info("Ending balance: " + runningBalance);
-        DailyBalance balance = new DailyBalance();
+        DailyActivity balance = new DailyActivity();
         balance.setDate(date);
         balance.setStartingBalance(startingBalance);
         balance.setTransactions(todaysPayments);
         balance.setEndingBalance(new BigDecimal(runningBalance));
-        dailyBalances.add(balance);
+        dailyActivity.add(balance);
       }
     }
     logger.info("Date of max debt: " + dateOfMaxDebt);
@@ -106,56 +138,40 @@ public class BudgetService {
     result.setEndingDate(endDate);
     result.setFirstNegativeBalance(firstNegativeDate);
     result.setMaxDebt(maxDebt);
-    result.setDailyBalances(dailyBalances);
+    result.setDailyActivity(dailyActivity);
     return result;
   }
 
-  private static boolean isDueOn(TransactionEntity payment, OffsetDateTime date) {
-    try {
-      LocalDate paymentDueDate = getDueDate(payment, date);
-      switch (date.getDayOfWeek()) {
-      case SATURDAY:
-      case SUNDAY:
-        return false;
-      case FRIDAY:
-        switch (paymentDueDate.getDayOfWeek()) {
-        case SATURDAY:
-          paymentDueDate = paymentDueDate.minusDays(1);
-          break;
-        case SUNDAY:
-          paymentDueDate = paymentDueDate.minusDays(2);
-          break;
-        default:
-          break;
-        }
-      default:
-        break;
-      }
-      return date.getMonth() == paymentDueDate.getMonth()
-          && date.getDayOfMonth() == paymentDueDate.getDayOfMonth();
-    } catch (Exception ex) {
+  private static boolean isDueOn(TransactionEntity payment, LocalDate date) {
+    // trim back transactions due at end of month for shorter months
+    LocalDate target = getDueDate(date, payment.getDayOfMonth());
+    boolean rightDay = target.getDayOfMonth() == date.getDayOfMonth();
+    if (!rightDay) {
       return false;
     }
+    boolean isPlanActive = planActive(date, payment);
+    return isPlanActive;
   }
 
-  public static LocalDate getDueDate(TransactionEntity transaction, OffsetDateTime date) {
-    int currentYear = date.getYear();
-    Month currentMonth = date.getMonth();
-    Integer arbitraryDay = transaction.getDayOfMonth();
+  private static LocalDate getDueDate(LocalDate date, int dayOfMonth) {
+    LocalDate nextDueDate;
     try {
-      return LocalDate.of(currentYear, currentMonth, arbitraryDay);
-    } catch (DateTimeException ex) {
-      try {
-//        logger.info(ex.getLocalizedMessage());
-        arbitraryDay--;
-        LocalDate result = LocalDate.of(currentYear, currentMonth, arbitraryDay);
-//        logger.info("New date: " + result);
-        return result;
-      } catch (DateTimeException ex2) {
-//        ex2.printStackTrace();
-        throw ex;
-      }
+      nextDueDate = LocalDate.of(date.getYear(), date.getMonth(), dayOfMonth);
+    } catch (Exception e) {
+      nextDueDate = getDueDate(date, dayOfMonth - 1);
     }
+    return nextDueDate;
+  }
+
+  private static boolean planActive(LocalDate date, TransactionEntity payment) {
+    boolean hasStarted = payment.getStartDate() == null ||
+        date.isAfter(payment.getStartDate());
+
+    boolean hasEnded = payment.getEndDate() != null &&
+        date.isAfter(payment.getEndDate());
+    boolean result = hasStarted && !hasEnded;
+
+    return result;
   }
 
 }
