@@ -41,10 +41,6 @@ public class BudgetService {
     for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
       BigDecimal startingBalance = new BigDecimal(runningBalance);
 //      runningBalance -= cash;
-      if (runningBalance < 0 && firstNegativeDate == null) {
-        firstNegativeDate = date;
-        firstNegativeBalance = runningBalance;
-      }
       if (runningBalance < maxDebt) {
         maxDebt = runningBalance;
         dateOfMaxDebt = date;
@@ -126,6 +122,10 @@ public class BudgetService {
         balance.setTransactions(todaysPayments);
         balance.setEndingBalance(new BigDecimal(runningBalance));
         dailyActivity.add(balance);
+      }
+      if (runningBalance < 0 && firstNegativeDate == null) {
+        firstNegativeDate = date;
+        firstNegativeBalance = runningBalance;
       }
     }
     logger.info("Date of max debt: " + dateOfMaxDebt);
