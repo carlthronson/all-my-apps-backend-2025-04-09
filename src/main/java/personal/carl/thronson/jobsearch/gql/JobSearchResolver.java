@@ -1,9 +1,16 @@
 package personal.carl.thronson.jobsearch.gql;
 
+import java.awt.print.Pageable;
 import java.time.Duration;
 import java.util.List;
 
+import org.hibernate.query.SortDirection;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SubscriptionMapping;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,9 +70,17 @@ public class JobSearchResolver {
   }
 
   @QueryMapping(name = "getJobSearchJobListings")
-  public List<JobSearchJobListingEntity> getJobSearchJobListings(
+  public Page<JobSearchJobListingEntity> getJobSearchJobListings(
+      @Argument(name = "pageNumber") int pageNumber,
+      @Argument(name = "pageSize") int pageSize,
+      @Argument(name = "sortDirection") String sortDirection,
+      @Argument(name = "sortProperties") List<String> sortProperties,
       DataFetchingEnvironment environment) throws Exception {
-    return jobSearchJobListingRepository.findAll();
+
+    String[] properties = sortProperties.toArray(new String[0]);
+    Direction direction = Direction.valueOf(sortDirection);
+    PageRequest pageable = PageRequest.of(pageNumber, pageSize, direction, properties);
+    return jobSearchJobListingRepository.findAll(pageable);
   }
 
   @QueryMapping(name = "getJobSearchCompanies")

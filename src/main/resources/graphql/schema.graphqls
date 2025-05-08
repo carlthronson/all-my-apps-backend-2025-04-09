@@ -4,7 +4,12 @@ type Query {
   getJobSearchPhases: [ProcessElement!]!
   getJobSearchStatuses: [ProcessElement!]!
   getJobSearchTasks: [JobSearchTask!]!
-  getJobSearchJobListings: [JobListing!]!
+  getJobSearchJobListings(
+    pageNumber: Int!
+    pageSize: Int!
+    sortDirection: String!
+    sortProperties: [String!]!
+  ): [JobListing!]!
   getJobSearchCompanies: [Company!]!
   getTransactions: [Transaction]!
   getForecast(
@@ -143,6 +148,7 @@ type JobListing {
   id: ID!
   name: String
   label: String
+  company: Company!
   companyName: String
   location: String
   linkedinid: Long
