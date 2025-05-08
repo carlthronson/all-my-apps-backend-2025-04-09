@@ -4,8 +4,8 @@ type Query {
   getJobSearchPhases: [ProcessElement!]!
   getJobSearchStatuses: [ProcessElement!]!
   getJobSearchTasks: [JobSearchTask!]!
-  getJobSearchJobListings: [ProcessElement!]!
-  getJobSearchCompanies: [ProcessElement!]!
+  getJobSearchJobListings: [JobListing!]!
+  getJobSearchCompanies: [Company!]!
   getTransactions: [Transaction]!
   getForecast(
     startBalance: Int!
@@ -153,6 +153,7 @@ type JobListing {
   sector: String
   worktype: String
   publishedAt: DateTime
+  task: JobSearchTask!
 }
 
 type JobSearchTask {
@@ -161,5 +162,20 @@ type JobSearchTask {
   label: String
   company: ProcessElement
   job: JobListing
-  status: ProcessElement
+  status: JobSearchStatus
+}
+
+type JobSearchStatus {
+  id: ID!
+  name: String
+  label: String
+  phase: ProcessElement
+}
+
+type Company {
+  id: ID!
+  name: String
+  label: String
+  location: String
+  jobs: [JobListing!]!
 }

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.OneToMany;
@@ -35,7 +36,7 @@ public class JobSearchCompanyEntity extends Story {
    * Meaning Job is the owner of the relationship
    * And the job table contains the company_id column
    */
-  @OneToMany(mappedBy = "company")
+  @OneToMany(mappedBy = "company", fetch = FetchType.EAGER)
   /**
    * For Json
    * The Company should not include the Jobs
