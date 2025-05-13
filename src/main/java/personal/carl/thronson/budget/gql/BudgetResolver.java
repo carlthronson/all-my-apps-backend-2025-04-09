@@ -17,7 +17,6 @@ import personal.carl.thronson.budget.core.Forecast;
 import personal.carl.thronson.budget.data.entity.TransactionEntity;
 import personal.carl.thronson.budget.data.repo.TransactionRepository;
 import personal.carl.thronson.security.AuthorizationService;
-import personal.carl.thronson.security.data.entity.AccountEntity;
 
 @RestController
 @Transactional
@@ -72,34 +71,14 @@ public class BudgetResolver {
       @Argument(name = "startDate") LocalDate startDate,
       @Argument(name = "endDate") LocalDate endDate,
       DataFetchingEnvironment environment) throws Exception {
-    return transactionRepository.findById(id).map(entity -> {
-      entity.setName(name);
-      entity.setAmount(amount);
-      entity.setDayOfMonth(dayOfMonth);
-      entity.setTransactionType(transactionType);
-      if (startDate != null)
-        entity.setStartDate(startDate);
-      if (endDate != null)
-        entity.setEndDate(endDate);
-      transactionRepository.save(entity);
-      return true;
-    }).orElse(false);
+    return service.updateTransaction(id, name, amount, dayOfMonth, transactionType, startDate, endDate, environment);
   }
 
   @MutationMapping(name = "deleteTransaction")
-  public Optional<Long> deleteTransaction(
+  public Boolean deleteTransaction(
       @Argument(name = "id") Long id,
       DataFetchingEnvironment environment) throws Exception {
-    Long result = 0L;
-    AccountEntity account = authorizationService.getAccount().get();
-    List<TransactionEntity> transactions = account.getPublishedTransactions();
-    for (TransactionEntity transaction: transactions) {
-      if (transaction.getId() == id) {
-        transactionRepository.delete(transaction);
-        result++;
-      }
-    }
-    return Optional.of(result);
+    return service.deleteTransaction(id, environment);
   }
 
   @QueryMapping(name = "getForecast")

@@ -3,8 +3,11 @@ package personal.carl.thronson.budget.gql;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -16,14 +19,17 @@ import personal.carl.thronson.budget.core.Forecast;
 import personal.carl.thronson.budget.data.core.DailyActivity;
 import personal.carl.thronson.budget.data.core.Transaction;
 import personal.carl.thronson.budget.data.entity.TransactionEntity;
+import personal.carl.thronson.budget.data.repo.TransactionRepository;
 import personal.carl.thronson.security.AuthorizationService;
-import personal.carl.thronson.security.data.entity.AccountEntity;
 
 @Service
 @Transactional
 public class BudgetService {
 
   Logger logger = Logger.getLogger(getClass().getName());
+
+  @Autowired
+  private TransactionRepository transactionRepository;
 
   @Autowired
   private AuthorizationService authorizationService;
@@ -180,11 +186,58 @@ public class BudgetService {
     return result;
   }
 
-  public List<TransactionEntity> getTransactions(
+  public List<TransactionEntity> getTransactions(DataFetchingEnvironment environment) {
+    return authorizationService.getAccount().map(account ->
+      // Create a stream of the main account and all its delegators
+      Stream.concat(Stream.of(account), account.getDelegators().stream())
+        // For each account, get its published transactions as a stream
+        .flatMap(acc -> acc.getPublishedTransactions().stream())
+        // Collect all transactions into a list
+        .collect(Collectors.toList()))
+        // If account is not present, return an empty list
+        .orElseGet(Collections::emptyList);
+  }
+
+  public Boolean deleteTransaction(
+      @Argument(name = "id") Long id,
       DataFetchingEnvironment environment) {
-    AccountEntity account = authorizationService.getAccount().get();
-    List<TransactionEntity> transactions = account.getPublishedTransactions();
-    return transactions;
+    return authorizationService.getAccount().flatMap(account -> {
+      return transactionRepository.findById(id).filter(transaction ->
+        transaction.getPublisher().equals(account) ||
+        account.getDelegators().contains(transaction.getPublisher())
+      ).map(transaction -> {
+        transactionRepository.delete(transaction);
+        return true;
+      });
+    }).orElse(false);
+  }
+
+  public Boolean updateTransaction(
+      @Argument(name = "id") Long id,
+      @Argument(name = "name") String name,
+      @Argument(name = "amount") BigDecimal amount,
+      @Argument(name = "dayOfMonth") int dayOfMonth,
+      @Argument(name = "transactionType") String transactionType,
+      @Argument(name = "startDate") LocalDate startDate,
+      @Argument(name = "endDate") LocalDate endDate,
+      DataFetchingEnvironment environment) {
+    return authorizationService.getAccount().flatMap(account -> {
+      return transactionRepository.findById(id).filter(transaction ->
+        transaction.getPublisher().equals(account) ||
+        account.getDelegators().contains(transaction.getPublisher())
+      ).map(entity -> {
+        entity.setName(name);
+        entity.setAmount(amount);
+        entity.setDayOfMonth(dayOfMonth);
+        entity.setTransactionType(transactionType);
+        if (startDate != null)
+          entity.setStartDate(startDate);
+        if (endDate != null)
+          entity.setEndDate(endDate);
+        transactionRepository.save(entity);
+        return true;
+      });
+    }).orElse(false);
   }
 
 }

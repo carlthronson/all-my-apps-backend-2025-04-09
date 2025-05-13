@@ -41,7 +41,22 @@ public class AccountEntity extends Account {
   @Transient
   private String authToken;
 
-  @OneToMany(mappedBy = "publisher")
+  @ManyToMany
+  @JoinTable(
+      name = "account_delegates",
+      joinColumns = @JoinColumn(name = "account_id"),
+      inverseJoinColumns = @JoinColumn(name = "delegate_id")
+  )
+  @Getter
+  @Setter
+  private List<AccountEntity> delegates = new ArrayList<>();
+
+  @ManyToMany(mappedBy = "delegates")
+  @Getter
+  @Setter
+  private List<AccountEntity> delegators = new ArrayList<>();
+
+  @OneToMany(mappedBy = "publisher", fetch = FetchType.EAGER)
   @Getter
   @Setter
   private List<TransactionEntity> publishedTransactions = new ArrayList<>();

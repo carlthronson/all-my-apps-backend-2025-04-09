@@ -1,6 +1,7 @@
 package personal.carl.thronson;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,30 +54,15 @@ public class DataInitializer implements CommandLineRunner {
     });
 
     // Create my account
-    accountRepository.findByEmail("carlthronson@gmail.com").ifPresentOrElse(roleEntity -> {
-    }, () -> {
-      AccountEntity carl = new AccountEntity();
-      carl.setEmail("carlthronson@gmail.com");
-      carl.setPassword(passwordEncoder.encode("8Xbk2334$&@"));
-      roleRepository.findByName(Role.ADMIN_ROLE_NAME).map(roleEntity -> {
-        carl.setRoles(Set.of(roleEntity));
-        return roleEntity;
-      }).orElseThrow(() -> new RuntimeException("Database Initialization Error"));
-      accountRepository.save(carl);
-    });
+    AccountEntity carl = createAccount("carlthronson@gmail.com", "8Xbk2334$&@");
 
-    // Create my account
-    accountRepository.findByEmail("krupa52012@gmail.com").ifPresentOrElse(roleEntity -> {
-    }, () -> {
-      AccountEntity krupa = new AccountEntity();
-      krupa.setEmail("krupa52012@gmail.com");
-      krupa.setPassword(passwordEncoder.encode("2wta018"));
-      roleRepository.findByName(Role.ADMIN_ROLE_NAME).map(roleEntity -> {
-        krupa.setRoles(Set.of(roleEntity));
-        return roleEntity;
-      }).orElseThrow(() -> new RuntimeException("Database Initialization Error"));
-      accountRepository.save(krupa);
-    });
+    // Create Krupa's account
+    AccountEntity krupa = createAccount("krupa52012@gmail.com", "2wta018");
+
+    if (carl.getDelegates().isEmpty()) {
+      carl.setDelegates(List.of(krupa));
+      accountRepository.save(carl);
+    }
 
     createPhase(JobSearchPhaseEntity.JOB_SEARCH_PHASE_NEW, "New");
     createPhase(JobSearchPhaseEntity.JOB_SEARCH_PHASE_MAYBE, "Maybe");
@@ -91,6 +77,19 @@ public class DataInitializer implements CommandLineRunner {
         JobSearchPhaseEntity.JOB_SEARCH_PHASE_CLOSED);
 
     initTransactions();
+  }
+
+  private AccountEntity createAccount(String email, String password) {
+    return accountRepository.findByEmail(email).orElseGet(() -> {
+      AccountEntity carl = new AccountEntity();
+      carl.setEmail(email);
+      carl.setPassword(passwordEncoder.encode(password));
+      roleRepository.findByName(Role.ADMIN_ROLE_NAME).map(roleEntity -> {
+        carl.setRoles(Set.of(roleEntity));
+        return roleEntity;
+      }).orElseThrow(() -> new RuntimeException("Database Initialization Error"));
+      return accountRepository.save(carl);
+    });
   }
 
   private void initTransactions() {
