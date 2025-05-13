@@ -7,14 +7,17 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import graphql.schema.DataFetchingEnvironment;
 import personal.carl.thronson.budget.core.Forecast;
 import personal.carl.thronson.budget.data.core.DailyActivity;
 import personal.carl.thronson.budget.data.core.Transaction;
 import personal.carl.thronson.budget.data.entity.TransactionEntity;
-import personal.carl.thronson.budget.data.repo.TransactionRepository;
+import personal.carl.thronson.security.AuthorizationService;
+import personal.carl.thronson.security.data.entity.AccountEntity;
 
 @Service
 @Transactional
@@ -23,10 +26,13 @@ public class BudgetService {
   Logger logger = Logger.getLogger(getClass().getName());
 
   @Autowired
-  private TransactionRepository transactionRepository;
+  private AuthorizationService authorizationService;
 
-  public Forecast getForecast(int startBalance, int cash) {
-    List<TransactionEntity> payments = this.transactionRepository.findAll();
+  public Forecast getForecast(
+      @Argument(name = "startBalance") int startBalance,
+      @Argument(name = "cash") int cash,
+      DataFetchingEnvironment environment) {
+    List<TransactionEntity> payments = getTransactions(environment);
 
     List<DailyActivity> dailyActivity = new ArrayList<>();
     int runningBalance = startBalance;
@@ -172,6 +178,13 @@ public class BudgetService {
     boolean result = hasStarted && !hasEnded;
 
     return result;
+  }
+
+  public List<TransactionEntity> getTransactions(
+      DataFetchingEnvironment environment) {
+    AccountEntity account = authorizationService.getAccount().get();
+    List<TransactionEntity> transactions = account.getPublishedTransactions();
+    return transactions;
   }
 
 }

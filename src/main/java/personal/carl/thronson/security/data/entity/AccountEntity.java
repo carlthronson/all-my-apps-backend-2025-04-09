@@ -1,5 +1,6 @@
 package personal.carl.thronson.security.data.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -16,6 +17,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.Setter;
+import personal.carl.thronson.budget.data.entity.TransactionEntity;
 import personal.carl.thronson.security.data.core.Account;
 
 @Entity(name = "account")
@@ -38,4 +40,9 @@ public class AccountEntity extends Account {
   @Setter
   @Transient
   private String authToken;
+
+  @OneToMany(mappedBy = "publisher")
+  @Getter
+  @Setter
+  private List<TransactionEntity> publishedTransactions = new ArrayList<>();
 }

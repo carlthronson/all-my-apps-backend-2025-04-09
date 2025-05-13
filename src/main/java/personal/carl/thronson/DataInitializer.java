@@ -137,6 +137,10 @@ public class DataInitializer implements CommandLineRunner {
     entity.setName(name);
     entity.setDayOfMonth(dayOfMonth);
     entity.setTransactionType(transactionType);
+    accountRepository.findByEmail("carlthronson@gmail.com").map(account -> {
+      entity.setPublisher(account);
+      return true;
+    });
     transactionRepository.save(entity);
   }
 
