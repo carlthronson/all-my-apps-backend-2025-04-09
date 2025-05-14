@@ -41,7 +41,7 @@ public class AccountEntity extends Account {
   @Transient
   private String authToken;
 
-  @ManyToMany
+  @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
       name = "account_delegates",
       joinColumns = @JoinColumn(name = "account_id"),
