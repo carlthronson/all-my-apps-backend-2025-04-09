@@ -40,6 +40,7 @@ public class SecurityConfig {
             .requestMatchers("/company/**").permitAll()
             .requestMatchers("/story/**").permitAll()
             .requestMatchers("/task/**").permitAll()
+            .requestMatchers("/card/**").permitAll()
             .anyRequest().authenticated()
             )
 //        .httpBasic(Customizer.withDefaults())
