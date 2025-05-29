@@ -1,7 +1,9 @@
 package personal.carl.thronson.jobsearch.gql;
 
 import java.lang.invoke.MethodHandles;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,25 +12,30 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import personal.carl.thronson.http.HttpUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import personal.carl.thronson.http.JobSummaryReader;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchCompanyEntity;
+import personal.carl.thronson.jobsearch.data.entity.JobSearchJobDescriptionEntity;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchJobListingEntity;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchPhaseEntity;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchStatusEntity;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchTaskEntity;
 import personal.carl.thronson.jobsearch.data.repo.JobSearchCompanyRepository;
+import personal.carl.thronson.jobsearch.data.repo.JobSearchJobDescriptionRepository;
 import personal.carl.thronson.jobsearch.data.repo.JobSearchJobListingRepository;
 import personal.carl.thronson.jobsearch.data.repo.JobSearchPhaseRepository;
 import personal.carl.thronson.jobsearch.data.repo.JobSearchStatusRepository;
 import personal.carl.thronson.jobsearch.data.repo.JobSearchTaskRepository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 import reactor.util.concurrent.Queues;
 
@@ -45,6 +52,7 @@ public class JobSearchService {
   private static String PATH_LINKEDIN_JOBSEARCH = "/jobs-guest/jobs/api/seeMoreJobPostings/search";
 
   Logger logger = Logger.getLogger(getClass().getName());
+  ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
   @Autowired
   private JobSearchPhaseRepository jobSearchPhaseRepository;
@@ -61,35 +69,114 @@ public class JobSearchService {
   @Autowired
   private JobSearchTaskRepository jobSearchTaskRepository;
 
+  @Autowired
+  private JobSearchJobDescriptionRepository jobSearchJobDescriptionRepository;
+
+  @Autowired
+  private OkHttpClient okHttpClient;
+
   @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
-  public void importEngineerJobs() throws Exception {
-    importJobs("engineer", 168, MAX_JOB_SEARCH_RESULTS);
+  public void importEngineerJobs() {
+    experimental("engineer", 168, MAX_JOB_SEARCH_RESULTS);
   }
 
   @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
-  public void importSoftwareJobs() throws Exception {
-    importJobs("software", 168, MAX_JOB_SEARCH_RESULTS);
+  public void importSoftwareJobs() {
+    experimental("software", 168, MAX_JOB_SEARCH_RESULTS);
   }
 
   @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
-  public void importDeveloperJobs() throws Exception {
-    importJobs("developer", 168, MAX_JOB_SEARCH_RESULTS);
+  public void importDeveloperJobs() {
+    experimental("developer", 168, MAX_JOB_SEARCH_RESULTS);
   }
 
   @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
-  public void importFullstackJobs() throws Exception {
-    importJobs("fullstack", 168, MAX_JOB_SEARCH_RESULTS);
+  public void importFullstackJobs() {
+    experimental("fullstack", 168, MAX_JOB_SEARCH_RESULTS);
   }
 
-  @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
-  public void importBackendJobs() throws Exception {
-    importJobs("backend", 168, MAX_JOB_SEARCH_RESULTS);
+  @Scheduled(fixedRate = 15 * 60 * 1000) // Executes every 15 minutes
+  public void importBackendJobs() {
+    experimental("backend", 168, MAX_JOB_SEARCH_RESULTS);
   }
 
-  private void importJobs(String keyword, int hours, int max) throws Exception {
-    System.out.println("***********************************");
-    System.out.println("       " + MethodHandles.lookup().lookupClass().getName() + " - importJobs " + keyword);
-    System.out.println("***********************************");
+//  private URL buildUrl(String keyword, int hours, int max) {
+//    return null;
+//  }
+
+  private void experimental(String keyword, int hours, int max) {
+    newFunction(keyword, hours, max);
+  }
+
+  public Flux<JobSearchJobListingEntity> scrapeJobs(String keyword, int hours, int max) {
+    // Step 1. format url
+    return getUrl(keyword, hours, max)
+    // Step 2. map to list of job meta data
+    .flatMap(url -> {
+//      System.out.println("flatMap URL: " + url);
+      return Mono.<List<JobSearchJobListingEntity>>create(sink -> {
+        Request httpRequest = new Request.Builder().url(url).get().build();
+        okHttpClient.newCall(httpRequest).enqueue(new JobSearchListCallback(sink));
+      });
+    })
+    // Step 3. map to flux of individual job meta data
+    .flatMapMany(Flux::fromIterable);
+  }
+
+  public Mono<List<JobSearchJobListingEntity>> pipeline (Flux<JobSearchJobListingEntity> flux) {
+    return flux
+        .flatMap(smth -> {
+          return Mono.<JobSearchJobListingEntity>create(sink -> {
+            Request httpRequest = buildJobDescriptionRequest(smth);
+            okHttpClient.newCall(httpRequest).enqueue(
+              new JobSearchDescriptionCallback(sink, smth));
+          })
+              .onErrorReturn(smth)
+              ;
+        })
+        .collectList();
+  }
+
+  private Request buildJobDescriptionRequest(JobSearchJobListingEntity job) {
+    return new Request.Builder().url(job.getLinkedinurl()).get().build();
+  }
+
+  private void newFunction(String keyword, int hours, int max) {
+    Flux<JobSearchJobListingEntity> source = scrapeJobs(keyword, hours, max);
+    pipeline(source)
+      .subscribe(
+      jobs -> {
+    //      System.out.println("Imported jobs: " + jobs.size());
+          importJobs(keyword, hours, max, jobs);
+      },
+      error -> {
+    //    System.err.println("Error importing jobs: " + error);
+        }
+    );
+  }
+
+  public Mono<URL> getUrl(String keyword, int hours, int max) {
+      System.out.println("***********************************");
+      System.out.println("       " + MethodHandles.lookup().lookupClass().getName() + " - importJobs " + keyword);
+      System.out.println("***********************************");
+      int seconds = 60 * (60 * hours);
+      int count = queryMap.getOrDefault(keyword, 0);
+      queryMap.remove(keyword);
+      if (count > max) {
+        queryMap.put(keyword, 0);
+        return Mono.empty();
+      }
+      String query = String.format(FORMAT_LINKEDIN_SEARCH_PARAMETERS, keyword, seconds, count);
+      try {
+        URI uri = new URI(PROTOCOL_HTTPS, HOST_LINKEDIN, PATH_LINKEDIN_JOBSEARCH, query, null);
+        URL url = uri.toURL();
+        return Mono.just(url);
+      } catch (URISyntaxException | MalformedURLException e) {
+        return Mono.error(e);
+      }
+  }
+
+  private void importJobs(String keyword, int hours, int max, List<JobSearchJobListingEntity> results) {
     int seconds = 60 * (60 * hours);
     int count = queryMap.getOrDefault(keyword, 0);
     queryMap.remove(keyword);
@@ -97,15 +184,11 @@ public class JobSearchService {
       queryMap.put(keyword, 0);
       return;
     }
-    // System.out.println("Query start: " + start);
-    String query = String.format(FORMAT_LINKEDIN_SEARCH_PARAMETERS, keyword, seconds, count);
-    URI uri = new URI(PROTOCOL_HTTPS, HOST_LINKEDIN, PATH_LINKEDIN_JOBSEARCH, query, null);
-    List<JobSearchJobListingEntity> results = search(uri);
     System.out.println("Found jobs: " + results.size());
     queryMap.put(keyword, count + results.size());
     for (JobSearchJobListingEntity job: results) {
       if (JobSummaryReader.isBadLocation(job.getLocation())) {
-//      System.out.println("bad location: " + job.getLocation());
+//        System.out.println("bad location: " + job.getLocation());
         continue;
       }
       Optional<JobSearchJobListingEntity> possibleExistingJob = jobSearchJobListingRepository.findByLinkedinid(job.getLinkedinid());
@@ -140,7 +223,7 @@ public class JobSearchService {
         jobSearchCompanyRepository.save(companyEntity);
       });
 
-      jobSearchJobListingRepository.save(job);      
+      jobSearchJobListingRepository.save(job);
 
 //      saveJob(job).flatMap(newEntity -> {
 //        return saveCompany(newEntity).map(smth -> saveTask(newEntity, smth));
@@ -339,20 +422,6 @@ public class JobSearchService {
 ////    return resultFlux;
 //  }
 
-  private static List<JobSearchJobListingEntity> search(URI uri) throws Exception {
-    List<JobSearchJobListingEntity> results = new ArrayList<>();
-    URL url = HttpUtils.connect(uri);
-    Document doc = Jsoup.parse(url, 5000);
-    JobSummaryReader jobSummaryReader = new JobSummaryReader();
-    for (JobSearchJobListingEntity job : jobSummaryReader.readDoc(doc)) {
-//      System.out.println(job);
-      results.add(job);
-    }
-//  for (JobSearchJobListingEntity job: results) {
-//      jobReader.addDetails(job);
-//  }
-    return results;
-  }
-
   private Map<String, Integer> queryMap = new HashMap<>();
+
 }

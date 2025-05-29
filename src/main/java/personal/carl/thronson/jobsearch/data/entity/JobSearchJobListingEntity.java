@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
@@ -63,7 +64,7 @@ public class JobSearchJobListingEntity extends ProcessElement {
   // Custom field
   @Getter
   @Setter
-  private String worktype;
+  private String employmentType;
 
   // Custom field
   @Getter
@@ -116,4 +117,24 @@ public class JobSearchJobListingEntity extends ProcessElement {
   @Getter
   @Setter
   private List<String> keywords;
+
+  /**
+   * Every description needs exactly one listing
+   * And every listing needs exactly one description
+   */
+  @OneToOne(mappedBy = "listing", cascade = CascadeType.ALL)
+  /**
+   * The listing is created first
+   * And then the description is created and refers to the listing
+   * Meaning description is the owner of the relationship
+   * And the description table contains the listing_id column
+   */
+  /**
+   * For Json
+   * The Listing should include the Description
+   */
+  @JsonBackReference(value = "listing-description")
+  @Getter
+  @Setter
+  private JobSearchJobDescriptionEntity description;
 }
