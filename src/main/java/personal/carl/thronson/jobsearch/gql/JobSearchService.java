@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import personal.carl.thronson.ai.svc.JobVectorService;
 import personal.carl.thronson.http.JobSummaryReader;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchCompanyEntity;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchJobDescriptionEntity;
@@ -71,6 +72,9 @@ public class JobSearchService {
 
   @Autowired
   private JobSearchJobDescriptionRepository jobSearchJobDescriptionRepository;
+
+  @Autowired
+  private JobVectorService jobVectorService;
 
   @Autowired
   private OkHttpClient okHttpClient;
@@ -176,6 +180,9 @@ public class JobSearchService {
       }
   }
 
+  int savedListings = 0;
+  int savedDescriptions = 0;
+
   private void importJobs(String keyword, int hours, int max, List<JobSearchJobListingEntity> results) {
     int seconds = 60 * (60 * hours);
     int count = queryMap.getOrDefault(keyword, 0);
@@ -187,10 +194,10 @@ public class JobSearchService {
     System.out.println("Found jobs: " + results.size());
     queryMap.put(keyword, count + results.size());
     for (JobSearchJobListingEntity job: results) {
-      if (JobSummaryReader.isBadLocation(job.getLocation())) {
-//        System.out.println("bad location: " + job.getLocation());
-        continue;
-      }
+//      if (JobSummaryReader.isBadLocation(job.getLocation())) {
+////        System.out.println("bad location: " + job.getLocation());
+//        continue;
+//      }
       Optional<JobSearchJobListingEntity> possibleExistingJob = jobSearchJobListingRepository.findByLinkedinid(job.getLinkedinid());
       if (possibleExistingJob.isPresent()) {
         JobSearchJobListingEntity existingJob = possibleExistingJob.get();
@@ -224,6 +231,13 @@ public class JobSearchService {
       });
 
       jobSearchJobListingRepository.save(job);
+      savedListings++;
+      System.out.println("Saved listings: " + savedListings);
+      if (job.getDescription() != null) {
+        jobVectorService.addJobDescription(job);
+        savedDescriptions++;
+        System.out.println("Saved descriptions: " + savedDescriptions);
+      }
 
 //      saveJob(job).flatMap(newEntity -> {
 //        return saveCompany(newEntity).map(smth -> saveTask(newEntity, smth));

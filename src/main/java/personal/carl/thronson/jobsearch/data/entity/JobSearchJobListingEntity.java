@@ -1,7 +1,9 @@
 package personal.carl.thronson.jobsearch.data.entity;
 
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -137,4 +139,11 @@ public class JobSearchJobListingEntity extends ProcessElement {
   @Getter
   @Setter
   private JobSearchJobDescriptionEntity description;
+
+  public Map<String, Object> getMetaData() {
+    Map<String, Object> map = new HashMap<>();
+    map.put("name", this.getName());
+    map.put("linkedinid", this.getLinkedinid());
+    return map;
+  }
 }
