@@ -93,6 +93,7 @@ public class DataInitializer implements CommandLineRunner {
   }
 
   private void initTransactions() {
+    transactionRepository.deleteAll();
     if (transactionRepository.count() == 0) {
       createTransaction("IRS", 520, 10, "payment");
       createTransaction("MB Car Loan", 680.73, 10, "payment");
