@@ -94,31 +94,37 @@ public class DataInitializer implements CommandLineRunner {
 
   private void initTransactions() {
     if (transactionRepository.count() == 0) {
-      createTransaction("IRS",520,10,"payment");
-      createTransaction("Safeco",0,3,"payment");
-      createTransaction("Liberty Mutual",354.76,18,"payment");
-      createTransaction("MB Car Loan",680.73,10,"payment");
-      createTransaction("Mortgage",5086,1,"payment");
-      createTransaction("Home Equity",4100,19,"payment");
-      createTransaction("Bank of America",1600,17,"payment");
-      createTransaction("Ax",2177,2,"payment");
-      createTransaction("DSC Card Carl",440,19,"payment");
-      createTransaction("DSC Card Krupa",400,31,"payment");
-      createTransaction("Garbage",100,20,"payment");
-      createTransaction("PG&E",1000,31,"payment");
-      createTransaction("Water",100,6,"payment");
-      createTransaction("WF Visa",200,12,"payment");
-      createTransaction("Xfinity",300,31,"payment");
-      createTransaction("DSC Loan Carl",788,4,"payment");
-      createTransaction("DSC Loan Krupa",552.6,6,"payment");
-      createTransaction("Jason Rent",1920,4,"payment");
-      createTransaction("First Paycheck",4986,15,"deposit");
-      createTransaction("Second Paycheck",4986,31,"deposit");
-      createTransaction("Fidelity Visa",600,18,"payment");
-      createTransaction("Jason MG&E",0,1,"payment");
-      createTransaction("Jason Rent insurance",0,1,"payment");
-      createTransaction("Carl Social Security",2600,22,"deposit");
-      createTransaction("Rent",4600,7,"deposit");
+      createTransaction("IRS", 520, 10, "payment");
+      createTransaction("MB Car Loan", 680.73, 10, "payment");
+      createTransaction("Mortgage", 5086, 1, "payment");
+      createTransaction("Home Equity", 4326, 19, "payment");
+      createTransaction("Bank of America", 1000, 17, "payment");
+      createTransaction("DSC Card Carl", 440, 19, "payment");
+      createTransaction("DSC Card Krupa", 400, 31, "payment");
+      createTransaction("WF Visa", 200, 12, "payment");
+      createTransaction("DSC Loan Carl", 788, 4, "payment");
+      createTransaction("DSC Loan Krupa", 552.6, 6, "payment");
+      createTransaction("Fidelity Visa", 650, 18, "payment");
+      createTransaction("AX - Plans", 1344, 2, "payment");
+      createTransaction("AX - Subscriptions", 606, 2, "payment");
+
+      createTransaction("First Paycheck", 4986, 15, "deposit");
+      createTransaction("Second Paycheck", 4986, 31, "deposit");
+      createTransaction("Carl Social Security", 2600, 23, "deposit");
+      createTransaction("Rent", 4600, 10, "deposit");
+      createTransaction("RSU", 8000, 23, "deposit");
+
+//      createTransaction("Discover loan", 5600, 28, "deposit");
+
+//      createTransaction("Safeco", 0, 3, "payment");
+//      createTransaction("Liberty Mutual", 354.76, 18, "payment");
+//      createTransaction("Garbage", 100, 20, "payment");
+//      createTransaction("PG&E", 1000, 31, "payment");
+//      createTransaction("Water", 100, 6, "payment");
+//      createTransaction("Xfinity", 300, 31, "payment");
+//      createTransaction("Jason Rent", 1920, 4, "payment");
+//      createTransaction("Jason MG&E", 0, 1, "payment");
+//      createTransaction("Jason Rent insurance", 0, 1, "payment");
     }
   }
 
