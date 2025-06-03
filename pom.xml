@@ -17,25 +17,6 @@
 	<properties>
 		<java.version>17</java.version>
 	</properties>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>ai.djl</groupId>
-				<artifactId>bom</artifactId>
-				<version>0.29.0</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<!-- Add Spring AI BOM -->
-			<dependency>
-				<groupId>org.springframework.ai</groupId>
-				<artifactId>spring-ai-bom</artifactId>
-				<version>1.0.0</version> <!-- Use latest version -->
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 	<dependencies>
 		<!-- Spring Boot and other app dependencies -->
 		<dependency>
@@ -125,48 +106,11 @@
 			<version>1.7.36</version>
 		</dependency>
 
-		<!-- DJL dependencies (no <version> tags, BOM provides version) -->
-		<dependency>
-			<groupId>ai.djl</groupId>
-			<artifactId>api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ai.djl</groupId>
-			<artifactId>basicdataset</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ai.djl</groupId>
-			<artifactId>model-zoo</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ai.djl.pytorch</groupId>
-			<artifactId>pytorch-engine</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ai.djl.pytorch</groupId>
-			<artifactId>pytorch-native-cpu</artifactId>
-			<classifier>osx-aarch64</classifier>
-		</dependency>
-		<dependency>
-			<groupId>ai.djl.pytorch</groupId>
-			<artifactId>pytorch-jni</artifactId>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/ai.djl.huggingface/tokenizers -->
-		<dependency>
-			<groupId>ai.djl.huggingface</groupId>
-			<artifactId>tokenizers</artifactId>
-		</dependency>
 		<!-- PostgreSQL JDBC driver -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
-		</dependency>
-		<!-- Spring AI PGVector integration (optional, for advanced vector
-		search) -->
-		<dependency>
-			<groupId>org.springframework.ai</groupId>
-			<artifactId>spring-ai-starter-vector-store-pgvector</artifactId>
 		</dependency>
 	</dependencies>
 	<build>
