@@ -16,17 +16,6 @@ type Query {
     startBalance: Int!
     cash: Int!
   ): Forecast
-  findSimilarJobs(
-    query: String!
-    topK: Int!
-  ): [JobVector!]!
-}
-
-type JobVector {
-  score: Float
-  name: String
-  linkedinid: String
-  description: String
 }
 
 type Forecast {
@@ -171,7 +160,6 @@ type JobListing {
   worktype: String
   publishedAt: DateTime
   task: JobSearchTask!
-  description: String
 }
 
 type JobSearchTask {

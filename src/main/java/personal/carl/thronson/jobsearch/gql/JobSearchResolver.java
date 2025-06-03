@@ -3,7 +3,6 @@ package personal.carl.thronson.jobsearch.gql;
 import java.awt.print.Pageable;
 import java.time.Duration;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.hibernate.query.SortDirection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
 import graphql.schema.DataFetchingEnvironment;
-import personal.carl.thronson.ai.data.JobVector;
-import personal.carl.thronson.ai.svc.JobVectorService;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchCompanyEntity;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchJobListingEntity;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchPhaseEntity;
@@ -50,9 +47,6 @@ public class JobSearchResolver {
 
   @Autowired
   private JobSearchTaskRepository jobSearchTaskRepository;
-
-  @Autowired
-  private JobVectorService jobVectorService;
 
 //  @Autowired
 //  private JobSearchService service;
@@ -173,21 +167,6 @@ public class JobSearchResolver {
           .map(i -> "ping " + i);
   }
 
-  @QueryMapping(name = "findSimilarJobs")
-  public List<JobVector> findSimilarJobs(
-      @Argument(name = "query") String query,
-      @Argument(name = "topK") int topK,
-      DataFetchingEnvironment environment) throws Exception {
-    return jobVectorService.findSimilarJobs(query, topK).stream()
-        .map(doc -> {
-          JobVector vector = new JobVector();
-          vector.setDescription(doc.getText());
-          vector.setName(doc.getMetadata().get("name").toString());
-          vector.setLinkedinid(doc.getMetadata().get("linkedinid").toString());
-          vector.setScore(doc.getScore());
-          return vector;
-        }).collect(Collectors.toList());
-  }
 //  @SubscriptionMapping(name = "newJobs")
 //  public Flux<JobSearchTaskEntity> newJobs() {
 //    return jobSearchTaskSink.asFlux().publish().autoConnect(0); // Allows new subscribers to get latest data
