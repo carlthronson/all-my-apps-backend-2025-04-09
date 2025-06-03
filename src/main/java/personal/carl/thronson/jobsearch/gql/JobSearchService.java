@@ -86,22 +86,22 @@ public class JobSearchService {
 
   @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
   public void importSoftwareJobs() {
-    experimental("software", 168, MAX_JOB_SEARCH_RESULTS);
+//    experimental("software", 168, MAX_JOB_SEARCH_RESULTS);
   }
 
   @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
   public void importDeveloperJobs() {
-    experimental("developer", 168, MAX_JOB_SEARCH_RESULTS);
+//    experimental("developer", 168, MAX_JOB_SEARCH_RESULTS);
   }
 
   @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
   public void importFullstackJobs() {
-    experimental("fullstack", 168, MAX_JOB_SEARCH_RESULTS);
+//    experimental("fullstack", 168, MAX_JOB_SEARCH_RESULTS);
   }
 
   @Scheduled(fixedRate = 15 * 60 * 1000) // Executes every 15 minutes
   public void importBackendJobs() {
-    experimental("backend", 168, MAX_JOB_SEARCH_RESULTS);
+//    experimental("backend", 168, MAX_JOB_SEARCH_RESULTS);
   }
 
 //  private URL buildUrl(String keyword, int hours, int max) {
