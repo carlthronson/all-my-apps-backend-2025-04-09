@@ -22,14 +22,6 @@ FROM openjdk:17-jdk-slim
 # Set the working directory in the container
 WORKDIR /app
 
-# --- DJL native dependencies for PyTorch/HuggingFace ---
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        libgomp1 \
-        libopenblas-base \
-        libstdc++6 \
-    && rm -rf /var/lib/apt/lists/*
-
 # Copy the jar file from the build stage
 COPY --from=build /app/target/*.jar app.jar
 
