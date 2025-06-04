@@ -70,20 +70,13 @@ public class JobSearchResolver {
   }
 
   @QueryMapping(name = "getJobSearchTasks")
-  public Page<JobSearchTaskEntity> getJobSearchTasks(
+  public List<JobSearchTaskEntity> getJobSearchTasks(
       DataFetchingEnvironment environment) throws Exception {
-    int pageNumber = 0;
-    int pageSize = 100;
-    String sortDirection = "ASC";
-    List<String> sortProperties = List.of("id");
-    String[] properties = sortProperties.toArray(new String[0]);
-    Direction direction = Direction.valueOf(sortDirection);
-    PageRequest pageable = PageRequest.of(pageNumber, pageSize, direction, properties);
-    return jobSearchTaskRepository.findAll(pageable);
+    return jobSearchTaskRepository.findAllWithAllRelations();
   }
 
   @QueryMapping(name = "getJobSearchJobListings")
-  public Page<JobSearchJobListingEntity> getJobSearchJobListings(
+  public List<JobSearchJobListingEntity> getJobSearchJobListings(
       @Argument(name = "pageNumber") int pageNumber,
       @Argument(name = "pageSize") int pageSize,
       @Argument(name = "sortDirection") String sortDirection,
@@ -93,7 +86,7 @@ public class JobSearchResolver {
     String[] properties = sortProperties.toArray(new String[0]);
     Direction direction = Direction.valueOf(sortDirection);
     PageRequest pageable = PageRequest.of(pageNumber, pageSize, direction, properties);
-    return jobSearchJobListingRepository.findAll(pageable);
+    return jobSearchJobListingRepository.findAllWithAllRelations();
   }
 
   @QueryMapping(name = "getJobSearchCompanies")
