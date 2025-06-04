@@ -9,7 +9,7 @@ type Query {
     pageSize: Int!
     sortDirection: String!
     sortProperties: [String!]!
-  ): [JobListing!]!
+  ): JobListingPage!
   getJobSearchCompanies: [Company!]!
   getTransactions: [Transaction]!
   getForecast(
@@ -20,6 +20,20 @@ type Query {
     query: String!
     topK: Int!
   ): [JobVector!]!
+}
+
+type JobListingPage {
+  content: [JobListing!]!    # getContent()
+  number: Int!               # getNumber()
+  size: Int!                 # getSize()
+  totalElements: Long!       # getTotalElements()
+  totalPages: Int!           # getTotalPages()
+  numberOfElements: Int!     # getNumberOfElements()
+  first: Boolean!            # isFirst()
+  last: Boolean!             # isLast()
+  hasNext: Boolean!          # hasNext()
+  hasPrevious: Boolean!      # hasPrevious()
+  empty: Boolean!            # isEmpty()
 }
 
 type JobVector {
