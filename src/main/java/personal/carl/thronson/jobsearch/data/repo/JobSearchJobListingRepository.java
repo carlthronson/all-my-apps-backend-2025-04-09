@@ -24,6 +24,7 @@ public interface JobSearchJobListingRepository extends ProcessElementRepository<
       LEFT JOIN FETCH t.status s
       LEFT JOIN FETCH s.phase p
       LEFT JOIN FETCH j.description d
+      ORDER BY j.publishedAt DESC
       """)
   List<JobSearchJobListingEntity> findAllWithAllRelations();
 }
