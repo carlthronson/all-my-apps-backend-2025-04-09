@@ -36,7 +36,7 @@ public class JobSearchCompanyEntity extends Story {
    * Meaning Job is the owner of the relationship
    * And the job table contains the company_id column
    */
-  @OneToMany(mappedBy = "company", fetch = FetchType.EAGER)
+  @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
   /**
    * For Json
    * The Company should not include the Jobs
