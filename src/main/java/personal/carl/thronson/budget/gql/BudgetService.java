@@ -227,6 +227,7 @@ public class BudgetService {
       @Argument(name = "transactionType") String transactionType,
       @Argument(name = "startDate") LocalDate startDate,
       @Argument(name = "endDate") LocalDate endDate,
+      @Argument(name = "accountName") String accountName,
       DataFetchingEnvironment environment) {
     return authorizationService.getAccount().flatMap(account -> {
       return transactionRepository.findById(id).filter(transaction ->
@@ -241,6 +242,7 @@ public class BudgetService {
           entity.setStartDate(startDate);
         if (endDate != null)
           entity.setEndDate(endDate);
+        entity.setAccountName(accountName);
         transactionRepository.save(entity);
         return true;
       });

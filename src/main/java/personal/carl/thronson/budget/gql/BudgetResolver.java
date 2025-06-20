@@ -45,6 +45,7 @@ public class BudgetResolver {
       @Argument(name = "transactionType") String transactionType,
       @Argument(name = "startDate") LocalDate startDate,
       @Argument(name = "endDate") LocalDate endDate,
+      @Argument(name = "accountName") String accountName,
       DataFetchingEnvironment environment) throws Exception {
     return authorizationService.getAccount().map(account -> {
       TransactionEntity entity = new TransactionEntity();
@@ -56,6 +57,7 @@ public class BudgetResolver {
         entity.setStartDate(startDate);
       if (endDate != null)
         entity.setEndDate(endDate);
+      entity.setAccountName(accountName);
       entity.setPublisher(account);
       return transactionRepository.save(entity).getId();
     });
@@ -70,8 +72,9 @@ public class BudgetResolver {
       @Argument(name = "transactionType") String transactionType,
       @Argument(name = "startDate") LocalDate startDate,
       @Argument(name = "endDate") LocalDate endDate,
+      @Argument(name = "accountName") String accountName,
       DataFetchingEnvironment environment) throws Exception {
-    return service.updateTransaction(id, name, amount, dayOfMonth, transactionType, startDate, endDate, environment);
+    return service.updateTransaction(id, name, amount, dayOfMonth, transactionType, startDate, endDate, accountName, environment);
   }
 
   @MutationMapping(name = "deleteTransaction")
