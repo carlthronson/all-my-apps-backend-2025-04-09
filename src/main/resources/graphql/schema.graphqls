@@ -13,9 +13,9 @@ type Query {
   getJobSearchCompanies: [Company!]!
   getTransactions: [Transaction]!
   getForecast(
-    startBalance: Int!
-    cash: Int!
-    prefix: String
+    accountName: String!
+    startingBalance: Int!
+    dailySpending: Int!
   ): Forecast
   findSimilarJobs(
     query: String!
@@ -45,8 +45,9 @@ type JobVector {
 }
 
 type Forecast {
+  accountName: String
   startingBalance: Int
-  cash: Int
+  dailySpending: Int
   endingDate: Date
   firstNegativeBalance: Date
   maxDebt:Int
@@ -58,6 +59,7 @@ type DailyActivity {
   startingBalance: String
   transactions: [Transaction!]!
   endingBalance: String
+  accountName: String
 }
 
 type Transaction {
@@ -68,6 +70,7 @@ type Transaction {
   transactionType: String!
   startDate: Date
   endDate: Date
+  accountName: String!
 }
 
 type Subscription {

@@ -83,11 +83,11 @@ public class BudgetResolver {
 
   @QueryMapping(name = "getForecast")
   public Forecast getForecast(
-      @Argument(name = "startBalance") int startBalance,
-      @Argument(name = "cash") int cash,
-      @Argument(name = "prefix") String prefix,
+      @Argument(name = "accountName") String accountName,
+      @Argument(name = "startingBalance") int startingBalance,
+      @Argument(name = "dailySpending") int dailySpending,
       DataFetchingEnvironment environment) throws Exception {
-    return service.getForecast(startBalance, cash, prefix, environment);
+    return service.getForecast(accountName, startingBalance, dailySpending, environment);
   }
 
 }

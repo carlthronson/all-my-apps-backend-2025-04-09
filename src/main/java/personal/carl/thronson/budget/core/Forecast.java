@@ -10,9 +10,10 @@ import personal.carl.thronson.budget.data.core.DailyActivity;
 public class Forecast {
 
   @Getter @Setter private int startingBalance;
-  @Getter @Setter private int cash;
+  @Getter @Setter private int dailySpending;
   @Getter @Setter private LocalDate firstNegativeBalance;
   @Getter @Setter private int maxDebt;
   @Getter @Setter private List<DailyActivity> dailyActivity;
   @Getter @Setter private LocalDate endingDate;
+  @Getter @Setter private String accountName;
 }

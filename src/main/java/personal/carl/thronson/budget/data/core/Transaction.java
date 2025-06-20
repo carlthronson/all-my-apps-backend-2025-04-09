@@ -14,7 +14,8 @@ public class Transaction extends BaseObject {
   @Getter @Setter private String name;
   @Getter @Setter private BigDecimal amount;
   @Getter @Setter private int dayOfMonth;
-  @Getter @Setter private String transactionType;
+  @Getter @Setter private String transactionType; // payment or deposit
   @Getter @Setter private LocalDate startDate;
   @Getter @Setter private LocalDate endDate;
+  @Getter @Setter private String accountName; // cash or credit
 }

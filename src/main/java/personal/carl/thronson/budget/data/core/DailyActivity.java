@@ -13,4 +13,5 @@ public class DailyActivity {
   @Getter @Setter private BigDecimal endingBalance;
   @Getter @Setter private BigDecimal startingBalance;
   @Getter @Setter private List<Transaction> transactions;
+  @Getter @Setter private String accountName;
 }

@@ -35,17 +35,14 @@ public class BudgetService {
   private AuthorizationService authorizationService;
 
   public Forecast getForecast(
-      @Argument(name = "startBalance") int startBalance,
-      @Argument(name = "cash") int cash,
-      @Argument(name = "prefix") String prefix,
+      @Argument(name = "accountName") String accountName,
+      @Argument(name = "startingBalance") int startingBalance,
+      @Argument(name = "dailySpending") int dailySpending,
       DataFetchingEnvironment environment) {
-    if (prefix == null) {
-      prefix = "";
-    }
-    List<TransactionEntity> payments = getTransactions(prefix, environment);
+    List<TransactionEntity> payments = getTransactions(accountName, environment);
 
     List<DailyActivity> dailyActivity = new ArrayList<>();
-    int runningBalance = startBalance;
+    int runningBalance = startingBalance;
     int maxDebt = runningBalance;
 
     LocalDate startDate = LocalDate.now();
@@ -55,7 +52,7 @@ public class BudgetService {
     int firstNegativeBalance = 0;
     LocalDate dateOfMaxDebt = startDate;
     for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
-      BigDecimal startingBalance = new BigDecimal(runningBalance);
+      BigDecimal dailyStartingBalance = new BigDecimal(runningBalance);
 //      runningBalance -= cash;
       if (runningBalance < maxDebt) {
         maxDebt = runningBalance;
@@ -63,11 +60,12 @@ public class BudgetService {
       }
       // Perform your operations with each date here
       List<Transaction> todaysPayments = new ArrayList<>();
-      Transaction cashPayment = new Transaction();
-      cashPayment.setAmount(new BigDecimal(cash));
-      cashPayment.setName("Cash");
-      cashPayment.setTransactionType(prefix + "payment");
-      todaysPayments.add(cashPayment);
+      Transaction dailySpendingTransaction = new Transaction();
+      dailySpendingTransaction.setAmount(new BigDecimal(dailySpending));
+      dailySpendingTransaction.setName("Daily Spending");
+      dailySpendingTransaction.setTransactionType("payment");
+      dailySpendingTransaction.setAccountName(accountName);
+      todaysPayments.add(dailySpendingTransaction);
       for (TransactionEntity payment : payments) {
         switch (date.getDayOfWeek()) {
         case SATURDAY:
@@ -118,12 +116,6 @@ public class BudgetService {
       }
       for (Transaction payment : todaysPayments) {
         String type = payment.getTransactionType();
-        if (prefix != null && prefix.length() > 0) {
-          if (!type.startsWith(prefix)) {
-            continue;
-          }
-          type = type.substring(prefix.length());
-        }
         switch (type) {
         case "payment":
           runningBalance = runningBalance - payment.getAmount().intValue();
@@ -140,9 +132,10 @@ public class BudgetService {
         logger.info("Ending balance: " + runningBalance);
         DailyActivity balance = new DailyActivity();
         balance.setDate(date);
-        balance.setStartingBalance(startingBalance);
+        balance.setStartingBalance(dailyStartingBalance);
         balance.setTransactions(todaysPayments);
         balance.setEndingBalance(new BigDecimal(runningBalance));
+        balance.setAccountName(accountName);
         dailyActivity.add(balance);
       }
       if (runningBalance < 0 && firstNegativeDate == null) {
@@ -155,12 +148,13 @@ public class BudgetService {
     logger.info("Date of first negative balance: " + firstNegativeDate);
     logger.info("First negative balance: " + firstNegativeBalance);
     Forecast result = new Forecast();
-    result.setStartingBalance(startBalance);
-    result.setCash(cash);
+    result.setStartingBalance(startingBalance);
+    result.setDailySpending(dailySpending);
     result.setEndingDate(endDate);
     result.setFirstNegativeBalance(firstNegativeDate);
     result.setMaxDebt(maxDebt);
     result.setDailyActivity(dailyActivity);
+    result.setAccountName(accountName);
     return result;
   }
 
@@ -196,14 +190,14 @@ public class BudgetService {
     return result;
   }
 
-  public List<TransactionEntity> getTransactions(String prefix, DataFetchingEnvironment environment) {
+  public List<TransactionEntity> getTransactions(String accountName, DataFetchingEnvironment environment) {
     return authorizationService.getAccount().map(account ->
       // Create a stream of the main account and all its delegators
       Stream.concat(Stream.of(account), account.getDelegators().stream())
         // For each account, get its published transactions as a stream
         .flatMap(acc -> acc.getPublishedTransactions().stream())
         .filter(transaction -> {
-          return transaction.getTransactionType().startsWith(prefix);
+          return transaction.getAccountName().compareToIgnoreCase(accountName) == 0;
         })
         // Collect all transactions into a list
         .collect(Collectors.toList()))
