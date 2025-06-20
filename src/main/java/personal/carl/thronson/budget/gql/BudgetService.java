@@ -39,7 +39,10 @@ public class BudgetService {
       @Argument(name = "startingBalance") int startingBalance,
       @Argument(name = "dailySpending") int dailySpending,
       DataFetchingEnvironment environment) {
-    List<TransactionEntity> payments = getTransactions(accountName, environment);
+    List<TransactionEntity> payments = getTransactions(environment)
+        .stream().filter(transaction -> {
+          return transaction.getAccountName().compareToIgnoreCase(accountName) == 0;
+        }).toList();
 
     List<DailyActivity> dailyActivity = new ArrayList<>();
     int runningBalance = startingBalance;
@@ -190,15 +193,12 @@ public class BudgetService {
     return result;
   }
 
-  public List<TransactionEntity> getTransactions(String accountName, DataFetchingEnvironment environment) {
+  public List<TransactionEntity> getTransactions(DataFetchingEnvironment environment) {
     return authorizationService.getAccount().map(account ->
       // Create a stream of the main account and all its delegators
       Stream.concat(Stream.of(account), account.getDelegators().stream())
         // For each account, get its published transactions as a stream
         .flatMap(acc -> acc.getPublishedTransactions().stream())
-        .filter(transaction -> {
-          return transaction.getAccountName().compareToIgnoreCase(accountName) == 0;
-        })
         // Collect all transactions into a list
         .collect(Collectors.toList()))
         // If account is not present, return an empty list

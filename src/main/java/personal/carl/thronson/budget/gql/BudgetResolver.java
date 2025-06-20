@@ -34,7 +34,7 @@ public class BudgetResolver {
   @QueryMapping(name = "getTransactions")
   public List<TransactionEntity> getTransactions(
       DataFetchingEnvironment environment) throws Exception {
-    return service.getTransactions("", environment);
+    return service.getTransactions(environment);
   }
 
   @MutationMapping(name = "createTransaction")
