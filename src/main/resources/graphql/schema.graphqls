@@ -15,6 +15,7 @@ type Query {
   getForecast(
     startBalance: Int!
     cash: Int!
+    prefix: String
   ): Forecast
   findSimilarJobs(
     query: String!

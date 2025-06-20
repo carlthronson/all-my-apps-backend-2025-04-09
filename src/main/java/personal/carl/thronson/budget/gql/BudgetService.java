@@ -37,8 +37,12 @@ public class BudgetService {
   public Forecast getForecast(
       @Argument(name = "startBalance") int startBalance,
       @Argument(name = "cash") int cash,
+      @Argument(name = "prefix") String prefix,
       DataFetchingEnvironment environment) {
-    List<TransactionEntity> payments = getTransactions(environment);
+    if (prefix == null) {
+      prefix = "";
+    }
+    List<TransactionEntity> payments = getTransactions(prefix, environment);
 
     List<DailyActivity> dailyActivity = new ArrayList<>();
     int runningBalance = startBalance;
@@ -62,7 +66,7 @@ public class BudgetService {
       Transaction cashPayment = new Transaction();
       cashPayment.setAmount(new BigDecimal(cash));
       cashPayment.setName("Cash");
-      cashPayment.setTransactionType("payment");
+      cashPayment.setTransactionType(prefix + "payment");
       todaysPayments.add(cashPayment);
       for (TransactionEntity payment : payments) {
         switch (date.getDayOfWeek()) {
@@ -114,6 +118,12 @@ public class BudgetService {
       }
       for (Transaction payment : todaysPayments) {
         String type = payment.getTransactionType();
+        if (prefix != null && prefix.length() > 0) {
+          if (!type.startsWith(prefix)) {
+            continue;
+          }
+          type = type.substring(prefix.length());
+        }
         switch (type) {
         case "payment":
           runningBalance = runningBalance - payment.getAmount().intValue();
@@ -186,12 +196,15 @@ public class BudgetService {
     return result;
   }
 
-  public List<TransactionEntity> getTransactions(DataFetchingEnvironment environment) {
+  public List<TransactionEntity> getTransactions(String prefix, DataFetchingEnvironment environment) {
     return authorizationService.getAccount().map(account ->
       // Create a stream of the main account and all its delegators
       Stream.concat(Stream.of(account), account.getDelegators().stream())
         // For each account, get its published transactions as a stream
         .flatMap(acc -> acc.getPublishedTransactions().stream())
+        .filter(transaction -> {
+          return transaction.getTransactionType().startsWith(prefix);
+        })
         // Collect all transactions into a list
         .collect(Collectors.toList()))
         // If account is not present, return an empty list
