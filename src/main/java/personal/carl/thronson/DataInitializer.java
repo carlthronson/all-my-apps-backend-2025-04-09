@@ -64,6 +64,11 @@ public class DataInitializer implements CommandLineRunner {
       accountRepository.save(carl);
     }
 
+    if (krupa.getDelegates().isEmpty()) {
+      krupa.setDelegates(List.of(carl));
+      accountRepository.save(krupa);
+    }
+
     createPhase(JobSearchPhaseEntity.JOB_SEARCH_PHASE_NEW, "New");
     createPhase(JobSearchPhaseEntity.JOB_SEARCH_PHASE_MAYBE, "Maybe");
     createPhase(JobSearchPhaseEntity.JOB_SEARCH_PHASE_MATCH, "Match");
