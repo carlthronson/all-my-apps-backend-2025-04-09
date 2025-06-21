@@ -94,10 +94,12 @@ public class JobSummaryReader extends DocReader<JobSearchJobListingEntity> {
         Element propertyElement = divs.first();
         String href = propertyElement.attr("href");
         // Has side effect of setting linkedinid
-        job.setLinkedinurl(href);
-        
-        URI uri = new URI(href);
-        String path = uri.getPath(); // This will drop off the query parameters
+        URL url = new URL(href);
+        String path = url.getPath();
+        String protocol = url.getProtocol();
+        String host = url.getHost();
+        url = new URL(protocol, host, path);
+        job.setLinkedinurl(url.toString());
         String jobId = path.substring(path.lastIndexOf("-") + 1);
         Long linkedinid = Long.valueOf(jobId);
         job.setLinkedinid(linkedinid);
