@@ -26,8 +26,12 @@ public interface JobSearchJobListingRepository extends ProcessElementRepository<
           LEFT JOIN FETCH t.status s
           LEFT JOIN FETCH s.phase p
           LEFT JOIN FETCH j.description d
+          LEFT JOIN FETCH d.analysis a
           """,
       countQuery = "SELECT COUNT(j) FROM job_search_job_listing j"
   )
   Page<JobSearchJobListingEntity> findAllWithAllRelations(Pageable pageable);
+
+  @Query("SELECT j FROM job_search_job_listing j WHERE j.description IS NULL")
+  Page<JobSearchJobListingEntity> findAllWhereDescriptionIsNull(Pageable pageable);
 }

@@ -1,7 +1,9 @@
 package personal.carl.thronson.jobsearch.data.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
@@ -39,4 +41,26 @@ public class JobSearchJobDescriptionEntity extends ProcessElement {
 
   @Column(length = 10000)
   @Getter @Setter private String description;
+
+  @Getter @Setter private String employmentType;
+
+  /**
+   * Every analysis needs exactly one description
+   * And every description needs exactly one analysis
+   */
+  @OneToOne(mappedBy = "description", cascade = CascadeType.ALL)
+  /**
+   * The description is created first
+   * And then the analysis is created and refers to the description
+   * Meaning analysis is the owner of the relationship
+   * And the analysis table contains the description_id column
+   */
+  /**
+   * For Json
+   * The Description should include the Analysis
+   */
+  @JsonBackReference(value = "description-analysis")
+  @Getter
+  @Setter
+  private JobSearchJobAnalysisEntity analysis;
 }
