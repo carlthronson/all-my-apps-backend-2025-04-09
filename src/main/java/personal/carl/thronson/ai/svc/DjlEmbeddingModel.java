@@ -1,25 +1,29 @@
 package personal.carl.thronson.ai.svc;
 
-import ai.djl.inference.Predictor;
-import ai.djl.repository.zoo.Criteria;
-import ai.djl.repository.zoo.ModelZoo;
-import org.springframework.ai.document.Document;
-import org.springframework.ai.embedding.EmbeddingModel;
-import org.springframework.ai.embedding.EmbeddingRequest;
-import org.springframework.ai.embedding.EmbeddingResponse;
-import org.springframework.ai.embedding.Embedding;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.ai.document.Document;
+import org.springframework.ai.embedding.Embedding;
+import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.embedding.EmbeddingRequest;
+import org.springframework.ai.embedding.EmbeddingResponse;
+
+import ai.djl.inference.Predictor;
+import ai.djl.repository.zoo.Criteria;
+import ai.djl.repository.zoo.ModelZoo;
+import lombok.Getter;
+import lombok.Setter;
+
 public class DjlEmbeddingModel implements EmbeddingModel {
 
+  @Getter
     private final Predictor<String, float[]> predictor;
 
     public DjlEmbeddingModel() throws Exception {
         Criteria<String, float[]> criteria = Criteria.builder()
                 .setTypes(String.class, float[].class)
-                .optModelUrls("djl://ai.djl.huggingface.pytorch/sentence-transformers/all-MiniLM-L6-v2")
+                .optModelUrls("djl://ai.djl.huggingface.pytorch/sentence-transformers/all-mpnet-base-v2")
                 .build();
         this.predictor = ModelZoo.loadModel(criteria).newPredictor();
     }
