@@ -2,6 +2,7 @@ package personal.carl.thronson;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,8 +10,10 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import personal.carl.thronson.budget.data.entity.FinancialAccountTypeEntity;
 import personal.carl.thronson.budget.data.entity.TransactionEntity;
 import personal.carl.thronson.budget.data.repo.TransactionRepository;
+import personal.carl.thronson.budget.simple.FinancialAccountTypeService;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchPhaseEntity;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchStatusEntity;
 import personal.carl.thronson.jobsearch.data.repo.JobSearchPhaseRepository;
@@ -41,6 +44,9 @@ public class DataInitializer implements CommandLineRunner {
 
   @Autowired
   private TransactionRepository transactionRepository;
+
+  @Autowired
+  private FinancialAccountTypeService financialAccountTypeService;
 
   @Override
   public void run(String... args) throws Exception {
@@ -82,6 +88,19 @@ public class DataInitializer implements CommandLineRunner {
         JobSearchPhaseEntity.JOB_SEARCH_PHASE_CLOSED);
 
     initTransactions();
+
+    createFinancialAccountType("CASH");
+    createFinancialAccountType("CREDIT");
+  }
+
+  private void createFinancialAccountType(String name) {
+    financialAccountTypeService.findByName(name).or(() -> {
+      FinancialAccountTypeEntity entity = new FinancialAccountTypeEntity();
+      entity.setName(name);
+      entity.setStartingBalance(1);
+      entity.setDailySpending(1);
+      return Optional.of(financialAccountTypeService.save(entity));
+    });
   }
 
   private AccountEntity createAccount(String email, String password) {

@@ -40,9 +40,8 @@ public abstract class SimpleService<ENTITY extends ProcessElement> {
     return getSimpleRepository().findAll();
   }
 
-  public ENTITY findByName(String name) {
-    ENTITY entity = getSimpleRepository().findByName(name);
-    return entity;
+  public Optional<ENTITY> findByName(String name) {
+    return getSimpleRepository().findByName(name);
   }
 
   public List<ENTITY> findAllByName(String name) {

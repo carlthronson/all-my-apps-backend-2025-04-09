@@ -12,11 +12,6 @@ type Query {
   ): JobListingPage!
   getJobSearchCompanies: [Company!]!
   getTransactions: [Transaction]!
-  getForecast(
-    accountName: String!
-    startingBalance: Int!
-    dailySpending: Int!
-  ): Forecast
   findSimilarJobs(
     query: String!
     topK: Int!
@@ -142,6 +137,18 @@ type Mutation {
   deleteTransaction(
     id: ID!
   ): Boolean!
+
+  saveFinancialAccountType(
+    name: String!
+    startingBalance: Int!
+    dailySpending: Int!
+  ): FinancialAccountType
+
+  getForecast(
+    accountName: String!
+    startingBalance: Int!
+    dailySpending: Int!
+  ): Forecast
 }
 
 scalar Long
@@ -150,6 +157,13 @@ scalar DateTime
 scalar Date
 
 directive @Pattern(regexp: String!) on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+type FinancialAccountType {
+  id: ID!,
+  name: String!,
+  startingBalance: Int!,
+  dailySpending: Int!
+}
 
 type ClientCheckoutData {
   id: ID!,

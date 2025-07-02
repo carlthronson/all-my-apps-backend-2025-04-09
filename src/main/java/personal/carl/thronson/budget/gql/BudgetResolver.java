@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 import graphql.schema.DataFetchingEnvironment;
 import jakarta.transaction.Transactional;
 import personal.carl.thronson.budget.core.Forecast;
+import personal.carl.thronson.budget.data.core.FinancialAccountType;
 import personal.carl.thronson.budget.data.entity.TransactionEntity;
 import personal.carl.thronson.budget.data.repo.TransactionRepository;
+import personal.carl.thronson.budget.simple.FinancialAccountTypeService;
 import personal.carl.thronson.security.AuthorizationService;
 
 @RestController
@@ -30,6 +32,9 @@ public class BudgetResolver {
 
   @Autowired
   private AuthorizationService authorizationService;
+
+  @Autowired
+  private FinancialAccountTypeService financialAccountTypeService;
 
   @QueryMapping(name = "getTransactions")
   public List<TransactionEntity> getTransactions(
@@ -84,7 +89,7 @@ public class BudgetResolver {
     return service.deleteTransaction(id, environment);
   }
 
-  @QueryMapping(name = "getForecast")
+  @MutationMapping(name = "getForecast")
   public Forecast getForecast(
       @Argument(name = "accountName") String accountName,
       @Argument(name = "startingBalance") int startingBalance,
@@ -93,4 +98,17 @@ public class BudgetResolver {
     return service.getForecast(accountName, startingBalance, dailySpending, environment);
   }
 
+  @MutationMapping(name = "saveFinancialAccountType")
+  public Optional<FinancialAccountType> saveFinancialAccountType(
+      @Argument(name = "name") String name,
+      @Argument(name = "startingBalance") int startingBalance,
+      @Argument(name = "dailySpending") int dailySpending,
+      DataFetchingEnvironment environment) throws Exception {
+    return financialAccountTypeService.findByName(name)
+        .map(entity -> {
+            entity.setStartingBalance(startingBalance);
+            entity.setDailySpending(dailySpending);
+            return financialAccountTypeService.save(entity);
+        });
+  }
 }

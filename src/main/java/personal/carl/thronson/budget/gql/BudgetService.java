@@ -18,8 +18,10 @@ import graphql.schema.DataFetchingEnvironment;
 import personal.carl.thronson.budget.core.Forecast;
 import personal.carl.thronson.budget.data.core.DailyActivity;
 import personal.carl.thronson.budget.data.core.Transaction;
+import personal.carl.thronson.budget.data.entity.FinancialAccountTypeEntity;
 import personal.carl.thronson.budget.data.entity.TransactionEntity;
 import personal.carl.thronson.budget.data.repo.TransactionRepository;
+import personal.carl.thronson.budget.simple.FinancialAccountTypeService;
 import personal.carl.thronson.security.AuthorizationService;
 
 @Service
@@ -34,18 +36,34 @@ public class BudgetService {
   @Autowired
   private AuthorizationService authorizationService;
 
+  @Autowired
+  private FinancialAccountTypeService financialAccountTypeService;
+
   public Forecast getForecast(
       @Argument(name = "accountName") String accountName,
-      @Argument(name = "startingBalance") int startingBalance,
-      @Argument(name = "dailySpending") int dailySpending,
+      @Argument(name = "startingBalance") int _startingBalance,
+      @Argument(name = "dailySpending") int _dailySpending,
       DataFetchingEnvironment environment) {
+
     List<TransactionEntity> payments = getTransactions(environment)
         .stream().filter(transaction -> {
           return transaction.getAccountName().compareToIgnoreCase(accountName) == 0;
         }).toList();
 
+    FinancialAccountTypeEntity entity = financialAccountTypeService
+      .findByName(accountName).map(e -> {
+        if (_startingBalance != -1) {
+          e.setStartingBalance(_startingBalance);
+          e.setDailySpending(_dailySpending);
+          e = financialAccountTypeService.save(e);
+        }
+        return e;
+      }).orElseThrow(() -> {
+        return new RuntimeException("Account type not found: " + accountName);
+      });
+
     List<DailyActivity> dailyActivity = new ArrayList<>();
-    int runningBalance = startingBalance;
+    int runningBalance = entity.getStartingBalance();
     int maxDebt = runningBalance;
 
     LocalDate startDate = LocalDate.now();
@@ -64,7 +82,7 @@ public class BudgetService {
       // Perform your operations with each date here
       List<Transaction> todaysPayments = new ArrayList<>();
       Transaction dailySpendingTransaction = new Transaction();
-      dailySpendingTransaction.setAmount(new BigDecimal(dailySpending));
+      dailySpendingTransaction.setAmount(new BigDecimal(entity.getDailySpending()));
       dailySpendingTransaction.setName("Daily Spending");
       dailySpendingTransaction.setTransactionType("payment");
       dailySpendingTransaction.setAccountName(accountName);
@@ -151,8 +169,8 @@ public class BudgetService {
     logger.info("Date of first negative balance: " + firstNegativeDate);
     logger.info("First negative balance: " + firstNegativeBalance);
     Forecast result = new Forecast();
-    result.setStartingBalance(startingBalance);
-    result.setDailySpending(dailySpending);
+    result.setStartingBalance(entity.getStartingBalance());
+    result.setDailySpending(entity.getDailySpending());
     result.setEndingDate(endDate);
     result.setFirstNegativeBalance(firstNegativeDate);
     result.setMaxDebt(maxDebt);

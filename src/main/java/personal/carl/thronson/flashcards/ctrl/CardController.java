@@ -70,7 +70,7 @@ public class CardController {
   }
 
   @RequestMapping(path = "/card/findbyname/{name}", method = RequestMethod.GET)
-  public CardEntity findByName(@PathVariable("name") String name) {
+  public Optional<CardEntity> findByName(@PathVariable("name") String name) {
     logger.info("Path variable: " + name);
     return service.findByName(name);
   }

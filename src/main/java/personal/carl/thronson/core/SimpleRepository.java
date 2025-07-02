@@ -1,6 +1,7 @@
 package personal.carl.thronson.core;
 
 import java.util.List;
+import java.util.Optional;
 
 import personal.carl.thronson.workflow.data.core.ProcessElement;
 
@@ -14,7 +15,7 @@ public interface SimpleRepository<E extends ProcessElement> {
 
   boolean existsByName(String name);
 
-  E findByName(String name);
+  Optional<E> findByName(String name);
 
   List<E> findAllByName(String name);
 
