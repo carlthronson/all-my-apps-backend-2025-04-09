@@ -5,8 +5,7 @@ import lombok.Setter;
 
 public class JobVector {
 
-  @Getter @Setter private String linkedinid;
-  @Getter @Setter private String name;
-  @Getter @Setter private String description;
+  @Getter @Setter private String text;
   @Getter @Setter private Double score;
+  @Getter @Setter private String metadata;
 }

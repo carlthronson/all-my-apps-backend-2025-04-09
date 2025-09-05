@@ -34,4 +34,6 @@ public interface JobSearchJobListingRepository extends ProcessElementRepository<
 
   @Query("SELECT j FROM job_search_job_listing j WHERE j.description IS NULL")
   Page<JobSearchJobListingEntity> findAllWhereDescriptionIsNull(Pageable pageable);
+
+  Page<JobSearchJobListingEntity> findAllByHasTitleVectorFalse(Pageable pageable);
 }

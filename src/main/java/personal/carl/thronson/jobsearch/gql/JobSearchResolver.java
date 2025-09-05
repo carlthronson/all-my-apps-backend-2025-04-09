@@ -1,16 +1,13 @@
 package personal.carl.thronson.jobsearch.gql;
 
-import java.awt.print.Pageable;
 import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.hibernate.query.SortDirection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SubscriptionMapping;
@@ -174,9 +171,8 @@ public class JobSearchResolver {
     return jobVectorService.findSimilarJobs(query, topK).stream()
         .map(doc -> {
           JobVector vector = new JobVector();
-          vector.setDescription(doc.getText());
-          vector.setName(doc.getMetadata().get("name").toString());
-          vector.setLinkedinid(doc.getMetadata().get("linkedinid").toString());
+          vector.setText(doc.getText());
+          vector.setMetadata(doc.getMetadata().toString());
           vector.setScore(doc.getScore());
           return vector;
         }).collect(Collectors.toList());

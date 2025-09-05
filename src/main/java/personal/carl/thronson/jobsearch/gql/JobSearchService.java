@@ -1,5 +1,7 @@
 package personal.carl.thronson.jobsearch.gql;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -10,6 +12,7 @@ import java.text.Normalizer.Form;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import okhttp3.MediaType;
@@ -102,6 +106,75 @@ public class JobSearchService {
 
   @Autowired
   private OkHttpClient okHttpClient;
+
+  // TODO
+  // Find all where there is a description and there is no description vector
+
+  @Scheduled(fixedRate = 1 * 60 * 1000) // Executes every 1 minutes
+  public void createJobTitleVectors() {
+    System.out.println("***********************************");
+    System.out.println("Scheduled task: " + MethodHandles.lookup().lookupClass().getName() + " - createJobTitleVectors ");
+    System.out.println("***********************************");
+    AtomicLong actualCount = new AtomicLong(0);
+    AtomicLong errorCount = new AtomicLong(0);
+    int pageSize = PAGE_SIZE;
+
+    // Fetch first page synchronously to get total pages
+    PageRequest firstPageRequest = PageRequest.of(0, pageSize);
+    Page<JobSearchJobListingEntity> firstPage = jobSearchJobListingRepository.findAllByHasTitleVectorFalse(firstPageRequest);
+    int totalPages = firstPage.getTotalPages();
+    System.out.println("Total pages: " + totalPages);
+    System.out.println("Total listings to process: " + firstPage.getTotalElements());
+
+    Flux.range(0, totalPages) // Emit page numbers
+      .concatMap(pageNumber -> {
+        logger.info("createJobTitleVectors page number: " + pageNumber);
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+        // Wrap blocking call in Mono.fromCallable and offload to boundedElastic scheduler
+        return Mono.fromCallable(() -> jobSearchJobListingRepository.findAllByHasTitleVectorFalse(pageRequest))
+          .subscribeOn(Schedulers.boundedElastic())
+          .doOnNext(page -> actualCount.addAndGet(page.getNumberOfElements()))
+          .onErrorResume(e -> {
+            errorCount.incrementAndGet();
+            logger.log(Level.WARNING, "Error fetching page: " + pageNumber, e);
+            // Return empty page to continue with next pages
+            return Mono.just(Page.empty());
+          })
+          .flatMapMany(page -> {
+            logger.info("One page of content: " + page.getContent().size());
+            return Flux.fromIterable(page.getContent());
+          });
+      })
+      .concatMap(jobListing ->
+        // Combine vector creation and save into one async chain
+        Mono.fromCallable(() -> {
+          jobVectorService.addJobDescription(jobListing);
+          return jobListing;
+        })
+        .subscribeOn(Schedulers.boundedElastic())
+        .flatMap(updatedJobListing -> {
+          updatedJobListing.setHasTitleVector(true);
+          return Mono.fromCallable(() -> jobSearchJobListingRepository.save(updatedJobListing))
+                     .subscribeOn(Schedulers.boundedElastic());
+        })
+        .onErrorResume(e -> {
+          errorCount.incrementAndGet();
+          logger.log(Level.WARNING, "Error processing job listing " + jobListing.getLinkedinurl(), e);
+          return Mono.empty(); // skip this listing and continue processing others
+        })
+      )
+      .doOnError(error -> {
+        logger.log(Level.SEVERE, "Error occurred during processing", error);
+      })
+      .subscribe(result -> {
+        // no-op onNext
+      }, error -> {
+        logger.log(Level.WARNING, "Error in scheduled vector creation", error);
+      }, () -> {
+        logger.info("Total listings processed: " + actualCount.get());
+        logger.info("Total errors encountered: " + errorCount.get());
+      });
+  }
 
   @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
   public void importEngineerJobs() {

@@ -140,6 +140,11 @@ public class JobSearchJobListingEntity extends ProcessElement {
   @Setter
   private JobSearchJobDescriptionEntity description;
 
+  @Column(columnDefinition = "boolean default false")
+  @Getter
+  @Setter
+  private boolean hasTitleVector;
+
   public Map<String, Object> getMetaData() {
     Map<String, Object> map = new HashMap<>();
     map.put("name", this.getName());

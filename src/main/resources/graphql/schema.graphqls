@@ -34,9 +34,8 @@ type JobListingPage {
 
 type JobVector {
   score: Float
-  name: String
-  linkedinid: String
-  description: String
+  text: String
+  metadata: String
 }
 
 type Forecast {

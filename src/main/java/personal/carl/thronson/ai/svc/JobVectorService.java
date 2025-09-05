@@ -18,10 +18,10 @@ public class JobVectorService {
   private VectorStore vectorStore;
 
   public void addJobDescription(JobSearchJobListingEntity entity) {
-    String description = entity.getDescription().getDescription();
+    String description = entity.getName();
     Map<String, Object> metaData = entity.getMetaData();
+    metaData.put("fieldName", "title");
     System.out.println("Store vector: " + metaData);
-    System.out.println("Desc length: " + description.length());
     Document doc = new Document(description, metaData);
     vectorStore.add(List.of(doc));
   }
