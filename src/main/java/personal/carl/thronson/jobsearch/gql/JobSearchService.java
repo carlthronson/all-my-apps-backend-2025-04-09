@@ -365,7 +365,8 @@ public class JobSearchService {
   }
 
   private void handleError(Throwable error) {
-    logger.log(Level.SEVERE, "Pipeline finished with error", error);
+//    logger.log(Level.SEVERE, "Pipeline finished with error", error);
+    System.out.println("Severe error: pipeline finished with error: " + error);
 //    error.printStackTrace();
   }
 
