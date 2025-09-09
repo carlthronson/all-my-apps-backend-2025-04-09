@@ -1,6 +1,8 @@
 package personal.carl.thronson.core;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -8,6 +10,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.persistence.Column;
@@ -24,7 +27,7 @@ import lombok.Setter;
 @EntityListeners(AuditingEntityListener.class)
 public class BaseObject {
 
-  static ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
+  protected static ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
   // Every entity needs an id
   @Id
@@ -70,5 +73,15 @@ public class BaseObject {
     } catch (JsonProcessingException e) {
       return e.getLocalizedMessage();
     }
+  }
+
+  public Map<String, Object> getMetaData() throws Exception {
+    Map<String, Object> map = new HashMap<>();
+    map.put("createdAt", createdAt);
+    map.put("deletedAt", deletedAt);
+    map.put("id", id);
+    map.put("updatedAt", updatedAt);
+    map.put("version", version);
+    return map;
   }
 }

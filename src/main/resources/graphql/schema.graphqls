@@ -36,6 +36,7 @@ type JobVector {
   score: Float
   text: String
   metadata: String
+  jobListing: JobListing
 }
 
 type Forecast {

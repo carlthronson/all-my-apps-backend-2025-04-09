@@ -17,11 +17,12 @@ public class JobVectorService {
   @Autowired
   private VectorStore vectorStore;
 
-  public void addJobDescription(JobSearchJobListingEntity entity) {
+  public void addJobDescription(JobSearchJobListingEntity entity) throws Exception {
     String description = entity.getName();
     Map<String, Object> metaData = entity.getMetaData();
+    metaData.entrySet().removeIf(entry -> entry.getValue() == null);
     metaData.put("fieldName", "title");
-    System.out.println("Store vector: " + metaData);
+//    System.out.println("Store vector: " + metaData);
     Document doc = new Document(description, metaData);
     vectorStore.add(List.of(doc));
   }

@@ -3,6 +3,7 @@ package personal.carl.thronson.jobsearch.data.entity;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -42,7 +43,7 @@ public class JobSearchCompanyEntity extends Story {
    * The Company should not include the Jobs
    */
   @JsonManagedReference(value = "job-company")
-//  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+  @JsonIgnore
   @Getter
   @Setter
   private List<JobSearchJobListingEntity> jobs;

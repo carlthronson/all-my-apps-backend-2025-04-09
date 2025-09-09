@@ -39,7 +39,7 @@ public class JobSearchJobDescriptionEntity extends ProcessElement {
   @Setter
   private JobSearchJobListingEntity listing;
 
-  @Column(length = 10000)
+  @Column(columnDefinition = "TEXT")
   @Getter @Setter private String description;
 
   @Getter @Setter private String employmentType;

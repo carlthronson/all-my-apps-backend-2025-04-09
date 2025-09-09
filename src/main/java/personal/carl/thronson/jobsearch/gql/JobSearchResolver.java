@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -83,7 +84,22 @@ public class JobSearchResolver {
     String[] properties = sortProperties.toArray(new String[0]);
     Direction direction = Direction.valueOf(sortDirection);
     PageRequest pageable = PageRequest.of(pageNumber, pageSize, direction, properties);
-    return jobSearchJobListingRepository.findAllWithAllRelations(pageable);
+//    return jobSearchJobListingRepository.findAllWithAllRelations(pageable);
+    String query = "Senior Software Engineer Backend Java";
+    int topK = 50;
+    List<JobSearchJobListingEntity> list = jobVectorService.findSimilarJobs(query, topK).stream()
+        .map(doc -> {
+//          JobVector vector = new JobVector();
+//          vector.setText(doc.getText());
+//          vector.setMetadata(doc.getMetadata().toString());
+//          vector.setScore(doc.getScore());
+          JobSearchJobListingEntity entity = JobSearchJobListingEntity.fromMetaData(doc.getMetadata());
+//          vector.setJobListing(entity);
+          return entity;
+        })
+        .sorted((b, a) -> a.getPublishedAt().compareTo(b.getPublishedAt()))
+        .collect(Collectors.toList());
+    return new PageImpl<>(list, pageable, list.size());
   }
 
   @QueryMapping(name = "getJobSearchCompanies")
@@ -174,6 +190,8 @@ public class JobSearchResolver {
           vector.setText(doc.getText());
           vector.setMetadata(doc.getMetadata().toString());
           vector.setScore(doc.getScore());
+          JobSearchJobListingEntity entity = JobSearchJobListingEntity.fromMetaData(doc.getMetadata());
+          vector.setJobListing(entity);
           return vector;
         }).collect(Collectors.toList());
   }

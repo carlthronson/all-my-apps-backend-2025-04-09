@@ -28,6 +28,7 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -110,7 +111,7 @@ public class JobSearchService {
   // TODO
   // Find all where there is a description and there is no description vector
 
-  @Scheduled(fixedRate = 1 * 60 * 1000) // Executes every 1 minutes
+  @Scheduled(fixedRate = 60 * 60 * 1000) // Executes every 60 minutes
   public void createJobTitleVectors() {
     System.out.println("***********************************");
     System.out.println("Scheduled task: " + MethodHandles.lookup().lookupClass().getName() + " - createJobTitleVectors ");
@@ -225,10 +226,10 @@ public class JobSearchService {
     }, this::handleError);
   }
 
-  @Scheduled(fixedRate = 15 * 60 * 1000) // Executes every 15 minutes
-  public void importJobDescriptions() {
-    importJobDescriptionPipeline();
-  }
+//  @Scheduled(fixedRate = 15 * 60 * 1000) // Executes every 15 minutes
+//  public void importJobDescriptions() {
+//    importJobDescriptionPipeline();
+//  }
 
   private void importJobDescriptionPipeline() {
     System.out.println("***********************************");
@@ -278,6 +279,7 @@ public class JobSearchService {
         return saveListingAndDescription(jobListing)
           .onErrorResume(e -> {
             errorCount.incrementAndGet();
+            if (!(e instanceof ObjectOptimisticLockingFailureException))
             logger.log(Level.WARNING, "Error saving job metadata for listing " + jobListing.getLinkedinurl(), e);
             return Mono.empty(); // Skip saving this item, continue with others
           });
@@ -304,7 +306,7 @@ public class JobSearchService {
       .bodyToMono(String.class)
 //      .doOnSubscribe(sub -> System.out.println("Fetching description for job: " + job.getLinkedinurl()))
 //      .doOnNext(body -> System.out.println("Received response for job: " + job.getLinkedinurl()))
-      .doOnError(error -> logger.log(Level.WARNING, "Error fetching job description for " + job.getLinkedinurl(), error))
+//      .doOnError(error -> logger.log(Level.WARNING, "Error fetching job description for " + job.getLinkedinurl(), error))
       .map(Jsoup::parse)
       .map(doc -> parseDescription(doc, job))
 //      .doOnSuccess(metaData -> System.out.println("Parsed description successfully for job: " + job.getLinkedinurl()))

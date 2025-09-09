@@ -33,7 +33,7 @@ public class JobAIAnalysisCallback implements Callback {
   @Override
   public void onResponse(Call call, Response response) throws IOException {
     try {
-      System.out.println("Response: " + response);
+//      System.out.println("Response: " + response);
       if (!response.isSuccessful()) {
         System.out.println("NOT SUCCESSFUL: " + response.toString());
           sink.success(jobDescription);
@@ -50,7 +50,7 @@ public class JobAIAnalysisCallback implements Callback {
       // Parse aiContent (which should be JSON) and update job fields
       // (You may need to parse aiContent as JSON as well, depending on your prompt)
       // Example:
-      System.out.println(aiContent);
+//      System.out.println(aiContent);
       JsonNode aiJson = mapper.readTree(aiContent);
       JobSearchJobAnalysisEntity analysis = new JobSearchJobAnalysisEntity();
       analysis.setDescription(jobDescription);
