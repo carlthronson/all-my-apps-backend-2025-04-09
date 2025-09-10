@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,4 +35,25 @@ public interface JobSearchJobListingRepository extends ProcessElementRepository<
 
   @Query("SELECT j FROM job_search_job_listing j WHERE j.description IS NULL")
   Page<JobSearchJobListingEntity> findAllWhereDescriptionIsNull(Pageable pageable);
+
+  @Query(value = """
+      SELECT e.*
+      FROM job_search_job_listing e
+      WHERE e.id NOT IN (
+        SELECT (metadata->>'entity_id')::bigint
+        FROM vector_store
+        WHERE metadata->>'entity_type' = :entityType
+      )
+      """,
+      countQuery = """
+      SELECT count(*)
+      FROM job_search_job_listing e
+      WHERE e.id NOT IN (
+        SELECT (metadata->>'entity_id')::bigint
+        FROM vector_store
+        WHERE metadata->>'entity_type' = :entityType
+      )
+      """,
+      nativeQuery = true)
+      Page<JobSearchJobListingEntity> findEntitiesNotProcessedByType(@Param("entityType") String entityType, Pageable pageable);
 }
