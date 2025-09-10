@@ -20,7 +20,8 @@ public class JobVectorService {
 
   public Document storeVectorEmbedding(BaseObject entity, String text) throws Exception {
     Map<String, Object> metaData = new HashMap<>();
-    metaData.put("id", entity.getId());
+    metaData.put("entity_id", entity.getId());
+    metaData.put("entity_type", entity.getClass().getName());
     Document doc = new Document(text, metaData);
     vectorStore.add(List.of(doc));
     return doc;
