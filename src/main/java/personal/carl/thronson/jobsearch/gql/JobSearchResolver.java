@@ -5,10 +5,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SubscriptionMapping;
@@ -19,12 +15,10 @@ import graphql.schema.DataFetchingEnvironment;
 import personal.carl.thronson.ai.data.JobVector;
 import personal.carl.thronson.ai.svc.JobVectorService;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchCompanyEntity;
-import personal.carl.thronson.jobsearch.data.entity.JobSearchJobListingEntity;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchPhaseEntity;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchStatusEntity;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchTaskEntity;
 import personal.carl.thronson.jobsearch.data.repo.JobSearchCompanyRepository;
-import personal.carl.thronson.jobsearch.data.repo.JobSearchJobListingRepository;
 import personal.carl.thronson.jobsearch.data.repo.JobSearchPhaseRepository;
 import personal.carl.thronson.jobsearch.data.repo.JobSearchStatusRepository;
 import personal.carl.thronson.jobsearch.data.repo.JobSearchTaskRepository;
@@ -41,16 +35,13 @@ public class JobSearchResolver {
   private JobSearchStatusRepository jobSearchStatusRepository;
 
   @Autowired
-  private JobSearchJobListingRepository jobSearchJobListingRepository;
-
-  @Autowired
   private JobSearchCompanyRepository jobSearchCompanyRepository;
 
   @Autowired
   private JobSearchTaskRepository jobSearchTaskRepository;
 
   @Autowired
-  private JobVectorService jobVectorService;
+  private JobVectorService vectorEmbeddingService;
 
 //  @Autowired
 //  private JobSearchService service;
@@ -71,35 +62,6 @@ public class JobSearchResolver {
   public List<JobSearchTaskEntity> getJobSearchTasks(
       DataFetchingEnvironment environment) throws Exception {
     return jobSearchTaskRepository.findAllWithAllRelations();
-  }
-
-  @QueryMapping(name = "getJobSearchJobListings")
-  public Page<JobSearchJobListingEntity> getJobSearchJobListings(
-      @Argument(name = "pageNumber") int pageNumber,
-      @Argument(name = "pageSize") int pageSize,
-      @Argument(name = "sortDirection") String sortDirection,
-      @Argument(name = "sortProperties") List<String> sortProperties,
-      DataFetchingEnvironment environment) throws Exception {
-
-    String[] properties = sortProperties.toArray(new String[0]);
-    Direction direction = Direction.valueOf(sortDirection);
-    PageRequest pageable = PageRequest.of(pageNumber, pageSize, direction, properties);
-//    return jobSearchJobListingRepository.findAllWithAllRelations(pageable);
-    String query = "Senior Software Engineer Backend Java";
-    int topK = 50;
-    List<JobSearchJobListingEntity> list = jobVectorService.findSimilarJobs(query, topK).stream()
-        .map(doc -> {
-//          JobVector vector = new JobVector();
-//          vector.setText(doc.getText());
-//          vector.setMetadata(doc.getMetadata().toString());
-//          vector.setScore(doc.getScore());
-          JobSearchJobListingEntity entity = JobSearchJobListingEntity.fromMetaData(doc.getMetadata());
-//          vector.setJobListing(entity);
-          return entity;
-        })
-        .sorted((b, a) -> a.getPublishedAt().compareTo(b.getPublishedAt()))
-        .collect(Collectors.toList());
-    return new PageImpl<>(list, pageable, list.size());
   }
 
   @QueryMapping(name = "getJobSearchCompanies")
@@ -184,14 +146,12 @@ public class JobSearchResolver {
       @Argument(name = "query") String query,
       @Argument(name = "topK") int topK,
       DataFetchingEnvironment environment) throws Exception {
-    return jobVectorService.findSimilarJobs(query, topK).stream()
+    return vectorEmbeddingService.findSimilarDocuments(query, topK).stream()
         .map(doc -> {
           JobVector vector = new JobVector();
           vector.setText(doc.getText());
           vector.setMetadata(doc.getMetadata().toString());
           vector.setScore(doc.getScore());
-          JobSearchJobListingEntity entity = JobSearchJobListingEntity.fromMetaData(doc.getMetadata());
-          vector.setJobListing(entity);
           return vector;
         }).collect(Collectors.toList());
   }

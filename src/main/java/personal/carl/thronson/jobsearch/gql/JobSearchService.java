@@ -100,7 +100,7 @@ public class JobSearchService {
   private JobSearchJobDescriptionRepository jobSearchJobDescriptionRepository;
 
   @Autowired
-  private JobVectorService jobVectorService;
+  private JobVectorService vectorEmbeddingService;
 
   @Autowired
   private JobSearchJobAnalysisRepository jobSearchJobAnalysisRepository;
@@ -122,7 +122,7 @@ public class JobSearchService {
 
     // Fetch first page synchronously to get total pages
     PageRequest firstPageRequest = PageRequest.of(0, pageSize);
-    Page<JobSearchJobListingEntity> firstPage = jobSearchJobListingRepository.findAllByHasTitleVectorFalse(firstPageRequest);
+    Page<JobSearchJobListingEntity> firstPage = jobSearchJobListingRepository.findAll(firstPageRequest);
     int totalPages = firstPage.getTotalPages();
     System.out.println("Total pages: " + totalPages);
     System.out.println("Total listings to process: " + firstPage.getTotalElements());
@@ -132,7 +132,7 @@ public class JobSearchService {
         logger.info("createJobTitleVectors page number: " + pageNumber);
         PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
         // Wrap blocking call in Mono.fromCallable and offload to boundedElastic scheduler
-        return Mono.fromCallable(() -> jobSearchJobListingRepository.findAllByHasTitleVectorFalse(pageRequest))
+        return Mono.fromCallable(() -> jobSearchJobListingRepository.findAll(pageRequest))
           .subscribeOn(Schedulers.boundedElastic())
           .doOnNext(page -> actualCount.addAndGet(page.getNumberOfElements()))
           .onErrorResume(e -> {
@@ -149,15 +149,13 @@ public class JobSearchService {
       .concatMap(jobListing ->
         // Combine vector creation and save into one async chain
         Mono.fromCallable(() -> {
-          jobVectorService.addJobDescription(jobListing);
-          return jobListing;
+          return vectorEmbeddingService.storeVectorEmbedding(jobListing, jobListing.getName());
         })
         .subscribeOn(Schedulers.boundedElastic())
-        .flatMap(updatedJobListing -> {
-          updatedJobListing.setHasTitleVector(true);
-          return Mono.fromCallable(() -> jobSearchJobListingRepository.save(updatedJobListing))
-                     .subscribeOn(Schedulers.boundedElastic());
-        })
+//        .flatMap(updatedJobListing -> {
+//          return Mono.fromCallable(() -> jobSearchJobListingRepository.save(updatedJobListing))
+//                     .subscribeOn(Schedulers.boundedElastic());
+//        })
         .onErrorResume(e -> {
           errorCount.incrementAndGet();
           logger.log(Level.WARNING, "Error processing job listing " + jobListing.getLinkedinurl(), e);

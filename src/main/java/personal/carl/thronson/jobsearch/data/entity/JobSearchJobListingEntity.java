@@ -1,10 +1,7 @@
 package personal.carl.thronson.jobsearch.data.entity;
 
-import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -140,104 +137,4 @@ public class JobSearchJobListingEntity extends ProcessElement {
   @Getter
   @Setter
   private JobSearchJobDescriptionEntity description;
-
-  @Column(columnDefinition = "boolean default false")
-  @Getter
-  @Setter
-  private boolean hasTitleVector;
-
-  @Override
-  public Map<String, Object> getMetaData() throws Exception {
-    Map<String, Object> map = super.getMetaData();
-    map.put("company", this.getCompany());
-    map.put("companyName", companyName);
-    map.put("contracttype", contracttype);
-    map.put("employmentType", employmentType);
-    map.put("experiencelevel", experiencelevel);
-    map.put("keywords", keywords);
-    map.put("linkedinid", linkedinid);
-    map.put("linkedinurl", linkedinurl);
-    map.put("location", location);
-    map.put("publishedAt", publishedAt);
-    map.put("salary", salary);
-    map.put("sector", sector);
-    map.put("task", this.getTask());
-//    System.out.println("metadata: " + map);
-    return map;
-  }
-
-  public static JobSearchJobListingEntity fromMetaData(Map<String, Object> map) {
-    JobSearchJobListingEntity entity = new JobSearchJobListingEntity();
-    getProcessElement(map, entity);
-
-    // For nested objects like 'company':
-    Map<String,Object> companyObj = (Map<String, Object>) map.get("company");
-    if (companyObj != null) {
-      JobSearchCompanyEntity company = new JobSearchCompanyEntity();
-      getProcessElement(companyObj, company);
-      company.setLocation(companyObj.get("location").toString());
-      entity.setCompany(company);
-    }
-    entity.setCompanyName((String) map.get("companyName"));
-    entity.setContracttype((String) map.get("contracttype"));
-    entity.setEmploymentType((String) map.get("employmentType"));
-    entity.setExperiencelevel((String) map.get("experiencelevel"));
-    entity.setKeywords((List<String>) map.get("keywords"));
-    entity.setLinkedinid((long) map.get("linkedinid"));
-    entity.setLinkedinurl((String) map.get("linkedinurl"));
-    entity.setLocation((String) map.get("location"));
-//    if (map.containsKey("createdAt")) {
-//      System.out.println("************* createdAt: " + map.get("createdAt"));
-//    } else {
-//      System.out.println("************* createdAt: NOT FOUND");
-//    }
-//    if (map.containsKey("publishedAt")) {
-//      System.out.println("************* publishedAt: " + map.get("publishedAt"));
-//    } else {
-//      System.out.println("************* publishedAt: NOT FOUND");
-//    }
-    Object publishedAtObj = map.get("publishedAt");
-    if (publishedAtObj instanceof OffsetDateTime) {
-        OffsetDateTime dt = (OffsetDateTime) publishedAtObj;
-        entity.setPublishedAt(dt);
-        // use dt
-    } else if (publishedAtObj instanceof Number) {
-        double epoch = ((Number) publishedAtObj).doubleValue();
-        long seconds = (long) epoch;
-        int nanos = (int)((epoch - seconds) * 1_000_000_000);
-        OffsetDateTime odt = OffsetDateTime.ofInstant(Instant.ofEpochSecond(seconds, nanos), ZoneOffset.UTC);
-        entity.setPublishedAt(odt);
-        // convert epoch float to OffsetDateTime
-    } else if (publishedAtObj instanceof String) {
-        OffsetDateTime dt = OffsetDateTime.parse((String) publishedAtObj);
-        entity.setPublishedAt(dt);
-        // use dt
-    }
-    entity.setSalary((String) map.get("salary"));
-    entity.setSector((String) map.get("sector"));
-//    entity.setTask((JobSearchTaskEntity) map.get("task"));
-
-    Map<String,Object> taskObj = (Map<String, Object>) map.get("task");
-    if (taskObj != null) {
-      JobSearchTaskEntity taskEntity = new JobSearchTaskEntity();
-      getProcessElement(taskObj, taskEntity);
-
-      Map<String,Object> statusObj = (Map<String, Object>) taskObj.get("status");
-      if (statusObj != null) {
-        JobSearchStatusEntity statusEntity = new JobSearchStatusEntity();
-        getProcessElement(statusObj, statusEntity);                
-        Map<String,Object> phaseObj = (Map<String, Object>) statusObj.get("phase");
-        if (phaseObj != null) {
-          JobSearchPhaseEntity phaseEntity = new JobSearchPhaseEntity();
-          getProcessElement(phaseObj, phaseEntity);
-          statusEntity.setPhase(phaseEntity);
-        }
-        taskEntity.setStatus(statusEntity);
-      }
-      entity.setTask(taskEntity);
-    }
-    
-    return entity;
-  }
-
 }
