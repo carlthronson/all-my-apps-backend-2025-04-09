@@ -122,7 +122,7 @@ public class JobSearchService {
 
     // Fetch first page synchronously to get total pages
     PageRequest firstPageRequest = PageRequest.of(0, pageSize);
-    Page<JobSearchJobListingEntity> firstPage = jobSearchJobListingRepository.findAll(firstPageRequest);
+    Page<JobSearchJobListingEntity> firstPage = jobSearchJobListingRepository.findEntitiesNotProcessedByType(JobSearchJobListingEntity.class.getName(), firstPageRequest);
     int totalPages = firstPage.getTotalPages();
     System.out.println("Total pages: " + totalPages);
     System.out.println("Total listings to process: " + firstPage.getTotalElements());
@@ -132,7 +132,7 @@ public class JobSearchService {
         logger.info("createJobTitleVectors page number: " + pageNumber);
         PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
         // Wrap blocking call in Mono.fromCallable and offload to boundedElastic scheduler
-        return Mono.fromCallable(() -> jobSearchJobListingRepository.findAll(pageRequest))
+        return Mono.fromCallable(() -> jobSearchJobListingRepository.findEntitiesNotProcessedByType(JobSearchJobListingEntity.class.getName(), pageRequest))
           .subscribeOn(Schedulers.boundedElastic())
           .doOnNext(page -> actualCount.addAndGet(page.getNumberOfElements()))
           .onErrorResume(e -> {
