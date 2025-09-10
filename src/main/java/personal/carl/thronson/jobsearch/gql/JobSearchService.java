@@ -114,7 +114,7 @@ public class JobSearchService {
   @Scheduled(fixedRate = 60 * 60 * 1000) // Executes every 60 minutes
   public void createJobTitleVectors() {
     System.out.println("***********************************");
-    System.out.println("Scheduled task: " + MethodHandles.lookup().lookupClass().getName() + " - createJobTitleVectors ");
+    System.out.println("Scheduled task: " + MethodHandles.lookup().lookupClass().getName() + " - createJobTitleVectors");
     System.out.println("***********************************");
     AtomicLong actualCount = new AtomicLong(0);
     AtomicLong errorCount = new AtomicLong(0);
@@ -231,7 +231,7 @@ public class JobSearchService {
 
   private void importJobDescriptionPipeline() {
     System.out.println("***********************************");
-    System.out.println("Scheduled task: " + MethodHandles.lookup().lookupClass().getName() + " - importJobDescriptions ");
+    System.out.println("Scheduled task: " + MethodHandles.lookup().lookupClass().getName() + " - importJobDescriptions");
     System.out.println("***********************************");
     AtomicLong actualCount = new AtomicLong(0);
     AtomicLong errorCount = new AtomicLong(0);
@@ -371,7 +371,7 @@ public class JobSearchService {
   @Scheduled(fixedRate = 15 * 60 * 1000) // Executes every 15 minutes
   public void analyzeJobDescriptions() {
     System.out.println("***********************************");
-    System.out.println("Scheduled task: " + MethodHandles.lookup().lookupClass().getName() + " - importJobDescriptions ");
+    System.out.println("Scheduled task: " + MethodHandles.lookup().lookupClass().getName() + " - analyzeJobDescriptions");
     System.out.println("***********************************");
     AtomicLong actualCount = new AtomicLong(0);
     AtomicLong errorCount = new AtomicLong(0);
