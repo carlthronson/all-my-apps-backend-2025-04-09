@@ -1,7 +1,11 @@
 package personal.carl.thronson.jobsearch.gql;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,14 +15,18 @@ import org.springframework.graphql.data.method.annotation.SubscriptionMapping;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import graphql.schema.DataFetchingEnvironment;
 import personal.carl.thronson.ai.data.JobVector;
 import personal.carl.thronson.ai.svc.JobVectorService;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchCompanyEntity;
+import personal.carl.thronson.jobsearch.data.entity.JobSearchJobListingEntity;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchPhaseEntity;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchStatusEntity;
 import personal.carl.thronson.jobsearch.data.entity.JobSearchTaskEntity;
 import personal.carl.thronson.jobsearch.data.repo.JobSearchCompanyRepository;
+import personal.carl.thronson.jobsearch.data.repo.JobSearchJobListingRepository;
 import personal.carl.thronson.jobsearch.data.repo.JobSearchPhaseRepository;
 import personal.carl.thronson.jobsearch.data.repo.JobSearchStatusRepository;
 import personal.carl.thronson.jobsearch.data.repo.JobSearchTaskRepository;
@@ -27,6 +35,8 @@ import reactor.core.publisher.Flux;
 @RestController
 @Transactional
 public class JobSearchResolver {
+
+  protected static ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
   @Autowired
   private JobSearchPhaseRepository jobSearchPhaseRepository;
@@ -39,6 +49,9 @@ public class JobSearchResolver {
 
   @Autowired
   private JobSearchTaskRepository jobSearchTaskRepository;
+
+  @Autowired
+  private JobSearchJobListingRepository jobSearchJobListingRepository;
 
   @Autowired
   private JobVectorService vectorEmbeddingService;
@@ -149,9 +162,14 @@ public class JobSearchResolver {
     return vectorEmbeddingService.findSimilarDocuments(query, topK).stream()
         .map(doc -> {
           JobVector vector = new JobVector();
-          vector.setText(doc.getText());
-          vector.setMetadata(doc.getMetadata().toString());
           vector.setScore(doc.getScore());
+          vector.setText(doc.getText());
+          Map<String, Object> metadata = doc.getMetadata();
+          vector.setMetadata(metadata.toString());
+          Long jobId = Long.parseLong(metadata.get("entity_id").toString());
+          jobSearchJobListingRepository.findById(jobId).ifPresent(jobListing -> {
+            vector.setJobListing(jobListing);
+          });
           return vector;
         }).collect(Collectors.toList());
   }
