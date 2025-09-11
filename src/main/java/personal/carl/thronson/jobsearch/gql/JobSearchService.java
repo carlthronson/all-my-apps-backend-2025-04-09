@@ -26,6 +26,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -108,11 +109,21 @@ public class JobSearchService {
   @Autowired
   private OkHttpClient okHttpClient;
 
+  @Autowired
+  private Environment env;
+
   // TODO
   // Find all where there is a description and there is no description vector
 
   @Scheduled(fixedRate = 60 * 60 * 1000) // Executes every 60 minutes
   public void createJobTitleVectors() {
+    String createJobTitleVectors = env.getProperty("createJobTitleVectors");
+    if (createJobTitleVectors != null) {
+      createJobTitleVectorsPipeline();
+    }
+  }
+
+  private void createJobTitleVectorsPipeline() {
     System.out.println("***********************************");
     System.out.println("Scheduled task: " + MethodHandles.lookup().lookupClass().getName() + " - createJobTitleVectors");
     System.out.println("***********************************");
@@ -176,28 +187,14 @@ public class JobSearchService {
   }
 
   @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
-  public void importEngineerJobs() {
-    experimental("engineer", 168, MAX_JOB_SEARCH_RESULTS);
-  }
-
-  @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
-  public void importSoftwareJobs() {
-    experimental("software", 168, MAX_JOB_SEARCH_RESULTS);
-  }
-
-  @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
-  public void importDeveloperJobs() {
-    experimental("developer", 168, MAX_JOB_SEARCH_RESULTS);
-  }
-
-  @Scheduled(fixedRate = 15000 * 60) // Executes every 15 minutes
-  public void importFullstackJobs() {
-    experimental("fullstack", 168, MAX_JOB_SEARCH_RESULTS);
-  }
-
-  @Scheduled(fixedRate = 15 * 60 * 1000) // Executes every 15 minutes
-  public void importBackendJobs() {
-    experimental("backend", 168, MAX_JOB_SEARCH_RESULTS);
+  public void importJobs() {
+    String importJobs = env.getProperty("importJobs");
+    if (importJobs != null) {
+      String[] keywords = importJobs.split(",");
+      for (String keyword: keywords) {
+        experimental(keyword, 168, MAX_JOB_SEARCH_RESULTS);
+      }
+    }
   }
 
   JobSummaryReader jobSummaryReader = new JobSummaryReader();
@@ -224,10 +221,13 @@ public class JobSearchService {
     }, this::handleError);
   }
 
-//  @Scheduled(fixedRate = 15 * 60 * 1000) // Executes every 15 minutes
-//  public void importJobDescriptions() {
-//    importJobDescriptionPipeline();
-//  }
+  @Scheduled(fixedRate = 15 * 60 * 1000) // Executes every 15 minutes
+  public void importJobDescriptions() {
+    String importJobDescriptions = env.getProperty("importJobDescriptions");
+    if (importJobDescriptions != null) {
+      this.importJobDescriptionPipeline();
+    }
+  }
 
   private void importJobDescriptionPipeline() {
     System.out.println("***********************************");
@@ -370,6 +370,13 @@ public class JobSearchService {
 
   @Scheduled(fixedRate = 15 * 60 * 1000) // Executes every 15 minutes
   public void analyzeJobDescriptions() {
+    String analyzeJobDescriptions = env.getProperty("analyzeJobDescriptions");
+    if (analyzeJobDescriptions != null) {
+      analyzeJobDescriptionsPipeline();
+    }
+  }
+
+  private void analyzeJobDescriptionsPipeline() {
     System.out.println("***********************************");
     System.out.println("Scheduled task: " + MethodHandles.lookup().lookupClass().getName() + " - analyzeJobDescriptions");
     System.out.println("***********************************");
