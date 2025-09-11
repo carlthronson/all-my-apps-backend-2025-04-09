@@ -171,7 +171,9 @@ public class JobSearchResolver {
             vector.setJobListing(jobListing);
           });
           return vector;
-        }).collect(Collectors.toList());
+        })
+        .sorted((a, b) -> b.getJobListing().getPublishedAt().compareTo(a.getJobListing().getPublishedAt()))
+        .collect(Collectors.toList());
   }
 //  @SubscriptionMapping(name = "newJobs")
 //  public Flux<JobSearchTaskEntity> newJobs() {
