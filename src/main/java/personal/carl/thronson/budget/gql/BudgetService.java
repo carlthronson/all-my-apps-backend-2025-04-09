@@ -81,12 +81,14 @@ public class BudgetService {
       }
       // Perform your operations with each date here
       List<Transaction> todaysPayments = new ArrayList<>();
-      Transaction dailySpendingTransaction = new Transaction();
-      dailySpendingTransaction.setAmount(new BigDecimal(entity.getDailySpending()));
-      dailySpendingTransaction.setName("Daily Spending");
-      dailySpendingTransaction.setTransactionType("payment");
-      dailySpendingTransaction.setAccountName(accountName);
-      todaysPayments.add(dailySpendingTransaction);
+      if (entity.getDailySpending() > 0) {
+        Transaction dailySpendingTransaction = new Transaction();
+        dailySpendingTransaction.setAmount(new BigDecimal(entity.getDailySpending()));
+        dailySpendingTransaction.setName("Daily Spending");
+        dailySpendingTransaction.setTransactionType("payment");
+        dailySpendingTransaction.setAccountName(accountName);
+        todaysPayments.add(dailySpendingTransaction);
+      }
       for (TransactionEntity payment : payments) {
         switch (date.getDayOfWeek()) {
         case SATURDAY:
