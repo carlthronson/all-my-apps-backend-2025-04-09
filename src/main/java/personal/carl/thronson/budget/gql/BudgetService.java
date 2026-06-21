@@ -167,18 +167,27 @@ public class BudgetService {
       }
     }
     for (DailyActivity activity: dailyActivity) {
+      List<Transaction> adjustedTransactions = new ArrayList<>();
       for (Transaction payment : activity.getTransactions()) {
-        String type = payment.getTransactionType();
+        Transaction trx = new Transaction();
+        trx.setAmount(new BigDecimal(payment.getAmount().intValue()));
+        trx.setName(payment.getName());
+        trx.setTransactionType(payment.getTransactionType());
+        trx.setAccountName(payment.getAccountName());
+
+        String type = trx.getTransactionType();
         switch (type) {
         case "payment":
-          payment.setAmount(new BigDecimal(0 - payment.getAmount().intValue()));
+          trx.setAmount(new BigDecimal(0 - payment.getAmount().intValue()));
           break;
         case "deposit":
           break;
         }
+        adjustedTransactions.add(trx);
 
-        logger.info(String.format("%s\t%s\t%s", type, payment.getAmount(), payment.getName()));
+        logger.info(String.format("************************* %s\t%s\t%s", type, trx.getAmount(), trx.getName()));
       }
+      activity.setTransactions(adjustedTransactions);
     }
     logger.info("Date of max debt: " + dateOfMaxDebt);
     logger.info("Max debt: " + maxDebt);
