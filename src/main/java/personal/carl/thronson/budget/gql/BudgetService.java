@@ -150,6 +150,16 @@ public class BudgetService {
 
         logger.info(String.format("%s\t%s\t%s", type, payment.getAmount(), payment.getName()));
       }
+      for (Transaction payment : todaysPayments) {
+        String type = payment.getTransactionType();
+        switch (type) {
+        case "payment":
+          payment.setAmount(0 - payment.getAmount().intValue());
+          break;
+        case "deposit":
+          break;
+        }
+      }
       if (!todaysPayments.isEmpty()) {
         logger.info("");
         logger.info("Ending balance: " + runningBalance);
