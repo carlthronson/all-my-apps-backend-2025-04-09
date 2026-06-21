@@ -142,7 +142,6 @@ public class BudgetService {
         switch (type) {
         case "payment":
           runningBalance = runningBalance - payment.getAmount().intValue();
-          payment.setAmount(new BigDecimal(0 - payment.getAmount().intValue()));
           break;
         case "deposit":
           runningBalance = runningBalance + payment.getAmount().intValue();
@@ -165,6 +164,20 @@ public class BudgetService {
       if (runningBalance < 0 && firstNegativeDate == null) {
         firstNegativeDate = date;
         firstNegativeBalance = runningBalance;
+      }
+    }
+    for (DailyActivity activity: dailyActivity) {
+      for (Transaction payment : activity.getTransactions()) {
+        String type = payment.getTransactionType();
+        switch (type) {
+        case "payment":
+          payment.setAmount(new BigDecimal(0 - payment.getAmount().intValue()));
+          break;
+        case "deposit":
+          break;
+        }
+
+        logger.info(String.format("%s\t%s\t%s", type, payment.getAmount(), payment.getName()));
       }
     }
     logger.info("Date of max debt: " + dateOfMaxDebt);
