@@ -154,7 +154,7 @@ public class BudgetService {
         String type = payment.getTransactionType();
         switch (type) {
         case "payment":
-          payment.setAmount(0 - payment.getAmount().intValue());
+          payment.setAmount(new BigDecimal(0 - payment.getAmount().intValue()));
           break;
         case "deposit":
           break;
