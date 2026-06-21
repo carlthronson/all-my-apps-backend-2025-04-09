@@ -142,6 +142,7 @@ public class BudgetService {
         switch (type) {
         case "payment":
           runningBalance = runningBalance - payment.getAmount().intValue();
+          payment.setAmount(new BigDecimal(0 - payment.getAmount().intValue()));
           break;
         case "deposit":
           runningBalance = runningBalance + payment.getAmount().intValue();
@@ -149,16 +150,6 @@ public class BudgetService {
         }
 
         logger.info(String.format("%s\t%s\t%s", type, payment.getAmount(), payment.getName()));
-      }
-      for (Transaction payment : todaysPayments) {
-        String type = payment.getTransactionType();
-        switch (type) {
-        case "payment":
-          payment.setAmount(new BigDecimal(0 - payment.getAmount().intValue()));
-          break;
-        case "deposit":
-          break;
-        }
       }
       if (!todaysPayments.isEmpty()) {
         logger.info("");
